@@ -127,3 +127,17 @@ Planning, scope, the design spec and the step plan (`PLAN.md`) were done in a Cl
 - **Verified:**
   - Offline: after one online visit, with the network off, reload, search (`vishvas` → विश्वास), a deep link (`/w/shabd`) and all 5 font faces work, and the offline banner shows. Zero console errors with the CSP enforced.
   - The 24-check interaction suite and the motion checks pass against the production build.
+
+## Step 8: Wiktionary fallback (go: started 8:21 PM, before the 10:35 cut-off, all earlier steps done)
+
+- **Checked first, as the plan requires:** `curl` of `/api/rest_v1/page/definition/पानी` returned 200 with `access-control-allow-origin: *`. The body is keyed by language code (`hi`, `ne`, `other`…), each entry is `{partOfSpeech, definitions: [{definition: HTML}]}`. A missing word (`खखखख`) returns 404 `{status, type}`. पानी is already in the dataset, so the live check uses किसान (farmer), which isn't.
+- **Produced:** `src/lib/wiktionary.ts` (pure apart from injected `fetch` and storage) and a dashed, separately labelled section on the no-results screen: "Not in Garuda’s dictionary yet · from Wiktionary (CC BY-SA)", up to 3 senses, and a link to the source page. It only runs for Devanagari queries with zero local results; 4 s `AbortController` timeout; only the `hi` section is read; HTML is stripped to plain text and rendered as text (no `dangerouslySetInnerHTML`); results and 404s are cached per word in `sessionStorage`; offline or on any error, nothing extra is shown.
+- **Decisions beyond the plan:**
+  - *A 400 ms pause before the network call.* The plan says search needs no debounce, which holds for local search. For a network fallback it would send a request for every zero-result prefix while someone types किसान letter by letter. The live test confirms a single request, for किसान.
+  - The lookup is aborted when the query changes. Server errors (5xx) are not cached, because they may be temporary; 404s are.
+  - The nukta is kept in the Wiktionary title (ज़िंदगी and जिंदगी are different pages there), unlike local search, which folds it.
+  - Requests send an `Api-User-Agent` header (app name only, nothing personal), as Wikimedia asks of API clients.
+- **Found while testing it, and fixed:** with the network off straight after a first visit, Chrome logged a failed favicon request. On a first visit the service worker installed but did not control the open page until a reload, which is exactly the plan's phone test (airplane mode after the first load). `clientsClaim: true` makes the first visit controlled at once; updates still wait for the user's Refresh. Re-tested: straight after a first load, offline search, the sheet and `/letter/क` all work, with zero failed requests.
+- **Verified:**
+  - `tests/wiktionary.test.ts`, 10 tests with a mocked `fetch`: success (3 senses max, plain text, source URL), timeout at exactly 4 s (fake timers), 404 (cached), no `hi` section, 503 (not cached), network failure, cache hit, no network for Latin or offline, abort, and HTML/entity stripping (including an `<img onerror>` payload).
+  - Live in Chrome against the production build with the CSP enforced: किसान shows "noun farmer, cultivator" with the CC BY-SA label and source link, the "Did you mean" rows stay separate below it, and the console stays clean.
