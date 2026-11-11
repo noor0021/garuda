@@ -28,4 +28,7 @@ export const STORAGE_KEYS = {
   theme: 'shabd.theme',
   saved: 'shabd.saved',
   recent: 'shabd.recent',
+  settings: 'shabd.settings',
+  /** sessionStorage: set once the intro has played in this session. */
+  introSeen: 'shabd.intro',
 } as const;

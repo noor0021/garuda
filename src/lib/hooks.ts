@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import { getSettings, SPEECH_RATE } from './settings.ts';
 
 export function useMediaQuery(query: string): boolean {
   return useSyncExternalStore(
@@ -13,7 +14,6 @@ export function useMediaQuery(query: string): boolean {
 }
 
 export const useIsDesktop = () => useMediaQuery('(min-width: 900px)');
-export const usePrefersReducedMotion = () => useMediaQuery('(prefers-reduced-motion: reduce)');
 
 export function useOnline(): boolean {
   return useSyncExternalStore(
@@ -56,6 +56,6 @@ export function speakHindi(text: string, voice: SpeechSynthesisVoice): void {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'hi-IN';
   utterance.voice = voice;
-  utterance.rate = 0.85; // a little slower than default, for learners
+  utterance.rate = SPEECH_RATE[getSettings().speechRate]; // Settings → Listen speed
   synth.speak(utterance);
 }

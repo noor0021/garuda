@@ -1,23 +1,30 @@
 /**
  * Motion (PLAN.md C7). GSAP is loaded lazily, after the dictionary is ready, so it never sits on
  * the critical path. Every helper is a no-op when:
- *   - the user prefers reduced motion (checked at call time, so a settings change applies at once)
+ *   - motion is off: Settings → Animations, or the system's reduced-motion preference when that
+ *     setting is "System" (checked at call time, so a change applies at once)
  *   - GSAP has not loaded yet: content then simply appears. Motion never delays content.
  */
-type Gsap = typeof import('gsap').gsap;
+import { motionDisabled } from './settings.ts';
+
+export type Gsap = typeof import('gsap').gsap;
 
 let gsap: Gsap | null = null;
-let loading: Promise<void> | null = null;
+let loading: Promise<Gsap | null> | null = null;
 
-export function preloadMotion(): void {
-  loading ??= import('gsap').then((module) => {
-    gsap = module.gsap;
-  }).catch(() => {
-    // Offline before the chunk was cached, or blocked: the app works without motion.
-  });
+/** Loads GSAP once. Resolves to null if it cannot load (offline before it was cached): no motion then. */
+export function loadMotion(): Promise<Gsap | null> {
+  loading ??= import('gsap')
+    .then((module) => (gsap = module.gsap))
+    .catch(() => null);
+  return loading;
 }
 
-const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+export function preloadMotion(): void {
+  void loadMotion();
+}
+
+const reduced = motionDisabled;
 
 /** Runs `animate` inside a gsap.context scoped to `scope`. Returns a cleanup that reverts it. */
 export function animate(scope: Element | null, animateFn: (g: Gsap) => void): () => void {

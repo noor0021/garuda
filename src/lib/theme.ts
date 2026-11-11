@@ -43,6 +43,8 @@ export function saveThemePreference(preference: ThemePreference): void {
   listeners.forEach((listener) => listener());
 }
 
+export const currentThemePreference = (): ThemePreference => (current ??= readThemePreference());
+
 /**
  * The saved preference as a store. During hydration React uses the server value ("system", as in
  * the prerendered HTML), then re-renders with the saved one: no hydration mismatch.
@@ -55,7 +57,7 @@ export function useThemePreference(): ThemePreference {
         listeners.delete(listener);
       };
     },
-    () => (current ??= readThemePreference()),
+    currentThemePreference,
     () => 'system',
   );
 }
