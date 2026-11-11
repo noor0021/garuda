@@ -27,7 +27,7 @@ import { GarudaMark } from "./GarudaMark.tsx";
  *   itself to get back on top of it (`restack`).
  * - Steps name a scene (home, search, entry) instead of a one-way action, so Back works too.
  * - It is rendered once in App, outside the router's screens, so it survives route changes.
- * - Square corners and a shirorekha on the card; the Garuda-wing mark instead of a mascot.
+ * - Square corners and a shirorekha on the card; the app's shirorekha mark instead of a mascot.
  */
 
 type Rect = { top: number; left: number; width: number; height: number };

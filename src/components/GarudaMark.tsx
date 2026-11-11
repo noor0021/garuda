@@ -1,13 +1,13 @@
-/** Original wing mark: three rising feathers, for Garuda. Also the source of the app icons. */
+/**
+ * The app's mark: a shirorekha (the headline Devanagari letters hang from) in ink, and hanging
+ * from it one vermilion stroke that sweeps into a wing-tip, for Garuda. Original geometry; the
+ * same two paths are public/logo.svg and the source of the app icons.
+ */
 export function GarudaMark({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-      <rect width="32" height="32" rx="8" fill="var(--accent)" />
-      <g fill="var(--bg)">
-        <path d="M5 21.5C11 20 18.5 14.5 27 4.5 24.5 13.5 18 20 8.5 23.5Z" />
-        <path d="M7 25.5c6-.8 12.5-4 18.5-11-2.8 6.8-8.6 10.8-15.5 12.4Z" />
-        <path d="M10 28.6c4.8-.3 9.2-2.2 12.8-5.8-2.2 3.9-6.1 6.3-10.6 7Z" />
-      </g>
+      <path fill="var(--ink)" d="M3 5h26v5H3z" />
+      <path fill="var(--accent)" d="M16.5 10h5v7c0 8-7.5 11.5-17.5 11 7-1.5 12.5-5 12.5-11z" />
     </svg>
   );
 }

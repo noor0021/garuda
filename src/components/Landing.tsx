@@ -140,9 +140,8 @@ export function Landing() {
       </button>
       <div className="landing-center">
         <svg className="landing-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-          <path className="landing-feather" d="M5 21.5C11 20 18.5 14.5 27 4.5 24.5 13.5 18 20 8.5 23.5Z" />
-          <path className="landing-feather" d="M7 25.5c6-.8 12.5-4 18.5-11-2.8 6.8-8.6 10.8-15.5 12.4Z" />
-          <path className="landing-feather" d="M10 28.6c4.8-.3 9.2-2.2 12.8-5.8-2.2 3.9-6.1 6.3-10.6 7Z" />
+          <path className="landing-feather" fill="var(--ink)" d="M3 5h26v5H3z" />
+          <path className="landing-feather" d="M16.5 10h5v7c0 8-7.5 11.5-17.5 11 7-1.5 12.5-5 12.5-11z" />
         </svg>
         <p className="landing-hero" lang="hi">शब्द</p>
         <span className="landing-rule" aria-hidden="true" />
