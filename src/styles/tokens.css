@@ -1,0 +1,63 @@
+/*
+ * Design tokens (PLAN.md C7): ink on paper, like a well-printed dictionary.
+ * Light is the default; the inline script in index.html sets data-theme="dark" before first paint
+ * when the saved choice (or the system, if nothing is saved) is dark.
+ * Contrast of every text/background pair is checked by `npm run contrast`.
+ */
+:root {
+  color-scheme: light;
+  --bg: #FAF6EE;
+  --surface: #FFFFFF;
+  --ink: #1C1A17;
+  --ink-2: #6B655C;
+  --line: #E7E0D3;
+  --line-strong: #8C8476;
+  --accent: #0F6E6E;
+  --on-accent: #FFFFFF;
+  --accent-soft: #E3F0EE;
+  --mark: #C27A12;
+  --mark-ink: #8A5208;
+  --mark-soft: #FBEFD9;
+  --danger: #B3412E;
+  --scrim: rgb(28 26 23 / 0.42);
+  --shadow-sheet: 0 -8px 32px rgb(28 26 23 / 0.14);
+
+  --font-ui: 'Inter Variable', 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-hi: 'Noto Sans Devanagari', 'Inter Variable', system-ui, sans-serif;
+  --font-headword: 'Noto Serif Devanagari', 'Noto Sans Devanagari', serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  --radius: 12px;
+  --radius-pill: 999px;
+  --tap: 44px;
+  --pane-left: 380px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #141312;
+  --surface: #1E1C1A;
+  --ink: #ECE6DA;
+  --ink-2: #A39C90;
+  --line: #2E2B27;
+  --line-strong: #6E675D;
+  --accent: #5FBFB4;
+  --on-accent: #0B1F1D;
+  --accent-soft: #1A2E2C;
+  --mark: #E8A93A;
+  --mark-ink: #E8A93A;
+  --mark-soft: #2E2416;
+  --danger: #E07A66;
+  --scrim: rgb(0 0 0 / 0.6);
+  --shadow-sheet: 0 -8px 32px rgb(0 0 0 / 0.5);
+}
