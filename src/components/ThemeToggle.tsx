@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { readThemePreference, saveThemePreference, watchSystemTheme, type ThemePreference } from '../lib/theme.ts';
+import { useEffect, useRef } from 'react';
+import { saveThemePreference, useThemePreference, watchSystemTheme, type ThemePreference } from '../lib/theme.ts';
 import { MoonIcon, SunIcon, SystemIcon } from './Icons.tsx';
 
 const ORDER: ThemePreference[] = ['system', 'light', 'dark'];
@@ -8,7 +8,7 @@ const ICON = { system: SystemIcon, light: SunIcon, dark: MoonIcon };
 
 /** Cycles System → Light → Dark. The choice is saved; "System" follows the OS live. */
 export function ThemeToggle() {
-  const [preference, setPreference] = useState<ThemePreference>(readThemePreference);
+  const preference = useThemePreference();
   const latest = useRef(preference);
 
   useEffect(() => {
@@ -24,7 +24,6 @@ export function ThemeToggle() {
     root.classList.add('theme-transition');
     window.setTimeout(() => root.classList.remove('theme-transition'), 350);
     saveThemePreference(next);
-    setPreference(next);
   };
 
   return (

@@ -39,9 +39,12 @@ const savedStore = createListStore<number>(STORAGE_KEYS.saved, isNumberArray);
 const recentStore = createListStore<string>(STORAGE_KEYS.recent, isStringArray);
 
 export const MAX_RECENT = 6;
+/** What the prerendered HTML was built with: nothing saved, no recents. Same array every time. */
+const NONE: never[] = [];
+const serverSnapshot = () => NONE;
 
 export function useSaved() {
-  const ids = useSyncExternalStore(savedStore.subscribe, savedStore.get, savedStore.get);
+  const ids = useSyncExternalStore(savedStore.subscribe, savedStore.get, serverSnapshot);
   return {
     ids,
     isSaved: (id: number) => ids.includes(id),
@@ -52,7 +55,7 @@ export function useSaved() {
 }
 
 export function useRecent() {
-  const items = useSyncExternalStore(recentStore.subscribe, recentStore.get, recentStore.get);
+  const items = useSyncExternalStore(recentStore.subscribe, recentStore.get, serverSnapshot);
   return {
     items,
     add(query: string) {

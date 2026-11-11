@@ -79,8 +79,11 @@ const snapshot = (): LocationState => {
   return cached;
 };
 
+/** What the build-time prerender (no window) sees: the home page. */
+const SERVER_STATE: LocationState = { route: { name: 'home' }, list: { name: 'home' }, lastSearch: null };
+
 export function useLocationState(): LocationState {
-  return useSyncExternalStore(subscribe, snapshot, snapshot);
+  return useSyncExternalStore(subscribe, snapshot, () => SERVER_STATE);
 }
 
 /** Click handler for <a href>: keeps ctrl/cmd-click and middle-click working as normal links. */
