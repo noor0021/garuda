@@ -8,3 +8,5 @@ drive
 *.log
 coverage
 .lighthouseci
+node_modules
+*.tsbuildinfo

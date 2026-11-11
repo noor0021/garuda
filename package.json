@@ -6,9 +6,9 @@
   "description": "Garuda Shabd: a Hindi-English dictionary PWA with spelling-tolerant search",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "tsc --noEmit",
     "lint": "oxlint",
     "test": "vitest run",
     "validate": "tsx scripts/validate-data.ts",
