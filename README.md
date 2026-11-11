@@ -22,9 +22,20 @@ Garuda's readers meet words such as धर्म, श्रद्धा and स�
 - **Browse** by वर्णमाला letter (क्ष, त्र and ज्ञ are letters of their own; letters with no words are greyed out), **Saved** words, recent searches, and a word of the day.
 - **Works offline** after the first visit, installs to the home screen, and shows "New version available · Refresh" when Garuda publishes new words.
 - **Not in the dictionary yet?** For a Devanagari word with no match, a clearly labelled, separate section shows up to three Hindi senses from Wiktionary (CC BY-SA) with a link to the source.
-- **An opening intro** (GSAP): the wing mark builds itself, शब्द appears, and three real searches play (`dharam → धर्म`, `vishvaas → विश्वास`, `peace → शांति`) before it hands over to the home page after 3 seconds. It plays once per visit, only on the home page (never on a shared word link), can be skipped, and can be switched off or replayed in Settings.
+- **A guided tour** on a first visit to the home page (and behind the `?` button in the header): a spotlight walks through a real search for `dharam`, the Devanagari preview, the "why matched" chip, an entry's Listen and Save, the Saved tab and Settings. Tap anywhere, use the arrow keys, or Skip/Esc; it never starts on a shared word link.
+- **An opening intro** (GSAP): the mark builds itself, शब्द appears, and three real searches play (`dharam → धर्म`, `vishvaas → विश्वास`, `peace → शांति`) before it hands over to the home page after 3 seconds. It plays once per visit, only on the home page (never on a shared word link), can be skipped, and can be switched off or replayed in Settings.
 - **Settings** in one place (the gear in the header): theme (System, Light, Dark), text size (Default, Large: headwords, meanings and examples 15% larger, for older readers), animations (System, On, Off), the intro, Listen speed, clearing recent searches or saved words, and an About section with the dictionary version and offline status. Theme, text size and motion are applied before first paint, so nothing jumps on load.
 - Phone bottom sheet with swipe-to-close, two panes on desktop, full keyboard use (`/` to search, `Enter` opens the top result, `Esc` clears or closes), and motion that switches off under the system's reduced-motion setting or the in-app one.
+
+## Design
+
+Most AI-built submissions land on the same look (warm paper, a serif, teal, pill chips, soft shadows). This one was redesigned around the structure of the script it serves.
+
+- **Letterpress palette.** Vermilion (सिंदूर) on white; chalk on slate in dark mode. Two colours and ink, no shadows, no pill backgrounds, square corners. Chips are small caps with a thin vermilion underline; part of speech is small caps and senses are numbered, as in a printed dictionary. Every text pair is checked for WCAG AA by `npm run contrast`.
+- **The shirorekha (शिरोरेखा).** Devanagari letters hang from a headline. The layout does the same: a solid 3px ink rule runs across the top of the search bar, the result list, the entry and the popovers, and the content hangs from it.
+- **The mark.** A shirorekha bar in ink with one vermilion stroke hanging from it that sweeps into a wing-tip, for Garuda. It is two hand-written SVG paths (`public/logo.svg`), with no text or font in it, and it is the app's own mark, not Garuda Prakashan's logo.
+- **The tour** is a TypeScript port of the spotlight tour from my own MediCord project (`TutorialOverlay.jsx`), restyled to these tokens: an SVG-mask spotlight, a caption card that travels with it and flips above or below by its measured height, and steps that set up the screen they point at.
+- **Not shipped tonight:** the akshara breakdown (see "What I'd build next").
 
 ## Run it
 
@@ -141,7 +152,9 @@ The first build scored 79 on Performance; [AI_LOG.md](AI_LOG.md) records each ch
 5. **Etymology and Sanskrit roots** (धर्म ← √धृ "to hold"), which suit Garuda's readership and its books.
 6. **An Android TWA** to list the same app on the Play Store.
 7. **Inflected forms:** plurals and oblique forms (किताबें, *kitaabein*) and verb forms (पढ़ता, पढ़ी) mapped to their headword.
-8. **Growing the dataset** with Garuda's editors (लड़का is the first gap the tests found), plus a Hindi-language interface option.
+8. **The akshara breakdown** (planned for this pass, cut at its 11:10 PM cut-off): under the IAST, the headword split into grapheme clusters with `Intl.Segmenter`, each with its IAST beneath (ध / dha · र्म / rma), tappable to hear. It needs care: a naive per-cluster transliteration misreads conjuncts and anusvara, so it was left out rather than shipped unchecked. The tour already has a step for it, which skips itself until it exists.
+9. **A Roman→Devanagari morph** on the preview line (the typed letters scramble into the headword), also cut for time.
+10. **Growing the dataset** with Garuda's editors (लड़का is the first gap the tests found), plus a Hindi-language interface option.
 
 ## Project files
 
