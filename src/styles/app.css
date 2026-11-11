@@ -1911,3 +1911,39 @@ dialog.tour.tour-still,
     transition: none;
   }
 }
+
+/* ── Spacing pass ──────────────────────────────────────────────────────────────
+ * Headings break into even lines and paragraphs avoid a lone last word. */
+h1,
+h2,
+h3,
+.tour-title {
+  text-wrap: balance;
+}
+
+p,
+li,
+blockquote {
+  text-wrap: pretty;
+}
+
+/* Chips in one row share a baseline, whichever script they are in. */
+.chips {
+  align-items: baseline;
+}
+
+.chip-link[lang='hi'] {
+  font-size: 18px;
+}
+
+/* The example sits under its label like every other section: one rule (the label's), no indent. */
+.entry-example {
+  padding: 0;
+  border-top: 0;
+}
+
+/* Chip links keep a 44px tap height, which left a wider gap under "Also spelled" than under the
+ * other labels; pull the row up so every label sits the same distance from its content. */
+.entry-label + .chips {
+  margin-top: calc(-1 * var(--space-2));
+}

@@ -41,21 +41,48 @@ export function useHindiVoice(): SpeechSynthesisVoice | null {
     const synth = window.speechSynthesis;
     const pick = () => {
       const voices = synth.getVoices();
-      setVoice(voices.find((v) => v.lang === 'hi-IN') ?? voices.find((v) => v.lang.toLowerCase().startsWith('hi')) ?? null);
+      // Android reports "hi_IN"; some engines report just "hi".
+      const lang = (v: SpeechSynthesisVoice) => v.lang.toLowerCase().replace('_', '-');
+      const found = voices.find((v) => lang(v) === 'hi-in') ?? voices.find((v) => lang(v).startsWith('hi')) ?? null;
+      setVoice((current) => found ?? current);
     };
     pick();
-    synth.addEventListener('voiceschanged', pick);
-    return () => synth.removeEventListener('voiceschanged', pick);
+    // Voices load late on Chrome and Android, and not every browser fires (or even supports
+    // listening for) `voiceschanged`, so listen where possible and also look again a few times.
+    synth.addEventListener?.('voiceschanged', pick);
+    const retries = [250, 1000, 3000].map((ms) => window.setTimeout(pick, ms));
+    return () => {
+      synth.removeEventListener?.('voiceschanged', pick);
+      retries.forEach((timer) => window.clearTimeout(timer));
+    };
   }, []);
   return voice;
 }
 
+/** Held until it ends: Chrome can garbage-collect an utterance mid-word and cut the speech off. */
+let speaking: SpeechSynthesisUtterance | null = null;
+
 export function speakHindi(text: string, voice: SpeechSynthesisVoice): void {
   const synth = window.speechSynthesis;
-  synth.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'hi-IN';
   utterance.voice = voice;
   utterance.rate = SPEECH_RATE[getSettings().speechRate]; // Settings → Listen speed
-  synth.speak(utterance);
+  utterance.onend = utterance.onerror = () => {
+    if (speaking === utterance) speaking = null;
+  };
+  speaking = utterance;
+  const start = () => {
+    if (speaking !== utterance) return; // a newer tap has replaced this one
+    if (synth.paused) synth.resume(); // Chrome can be left paused, which silences every later word
+    synth.speak(utterance);
+  };
+  // cancel() followed at once by speak() can drop the new word in Chrome and Safari, so cancel
+  // only when something is playing or queued, and then start a moment later.
+  if (synth.speaking || synth.pending) {
+    synth.cancel();
+    window.setTimeout(start, 80);
+  } else {
+    start();
+  }
 }
