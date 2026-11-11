@@ -94,3 +94,36 @@ Planning, scope, the design spec and the step plan (`PLAN.md`) were done in a Cl
   - With motion, rows start at opacity 0 in the first frame and settle to 1 with inline styles cleared.
   - Under `prefers-reduced-motion: reduce`, no row, sheet or star ever gets an inline animation style.
   - The interaction suite, now 24 checks including "grabbing mid-slide finishes the slide", passes with zero console errors or warnings.
+
+## Step 7: Production hardening (PWA, security headers, SEO, Lighthouse)
+
+- **Asked:** PWA (manifest, icons from an original SVG mark, precache, update toast, offline verified), the full security header set and CSP, SEO tags and an original OG image, zero console errors, Lighthouse mobile ≥ 95 in all four categories with the real numbers recorded.
+- **Produced:**
+  - *PWA:* `vite-plugin-pwa` manifest (short name "Shabd"), icons rendered in Chrome from `public/icons/icon.svg` and `maskable.svg` (192, 512, maskable 512, apple-touch 180), a precache of the shell, `entries.json` and only the 6 font files the app uses (Latin, Latin-ext for IAST, Devanagari; Cyrillic, Greek and Vietnamese subsets are emitted by Fontsource but never precached), `navigateFallback` so deep links such as `/w/shabd` open offline, and a "New version available · Refresh" toast.
+  - *Security:* `vercel.json` CSP (`script-src 'self'` plus the sha256 of the inline theme script, no `unsafe-eval`, `frame-ancestors 'none'`, `connect-src` limited to self and Wiktionary), `nosniff`, `Referrer-Policy`, `X-Frame-Options: DENY`, a minimal `Permissions-Policy`, a year of immutable caching on `/assets/*`, and `no-cache` on `sw.js`. `tests/deploy-config.test.ts` recomputes the hash from `index.html`, so editing the theme script without updating the CSP fails CI instead of silently breaking the theme in production.
+  - *SEO:* description, canonical (updated per page, so a shared `/w/dharm` link is indexed as that word), Open Graph and Twitter tags, an original 1200×630 `og-image.png` (rendered from HTML in Chrome with the app's own fonts), `robots.txt` and a generated `sitemap.xml` with all 129 word pages. The absolute URL comes from Vercel's `VERCEL_PROJECT_PRODUCTION_URL` at build time, so the domain is not guessed or hard-coded.
+- **Plan conflict resolved:** C8 asks for `registerType: 'autoUpdate'` *and* a "New version available · Refresh" toast. In vite-plugin-pwa, autoUpdate reloads the page on its own (possibly mid-search), so the toast would never be seen. Prompt mode was used so the toast works as specified.
+- **Lighthouse, and what it took (mobile, Lighthouse 12.6.1, simulated slow 4G with 4× CPU slowdown, against `dist/` served with the `vercel.json` headers):**
+  | Change | Home: Performance | FCP | LCP |
+  |---|---|---|---|
+  | First build (empty `#root`, everything waits for React) | 79 | 3.8 s | 3.9 s |
+  | Prerender the shell into `index.html` at build time | 85 | 2.5 s | 3.9 s |
+  | Hydrate instead of replace, inline the 18 kB stylesheet | 94 | 2.3 s | 2.6 s |
+  | Drop Noto Sans Devanagari 600 (bold Devanagari uses the serif headword face) | 87–88 | 2.3 s | 3.6 s |
+  | Make the home hint the 20 px lead text | 93–95 | 2.3 s | 2.4–2.7 s |
+  | Load the bundle one frame after first paint (`boot.js`) | 95–96 (5 runs) | 2.0 s | 2.4–2.6 s |
+  - The regression in row 4 was instructive: setting the bold Devanagari in the serif face made the "आज का शब्द · Word of the day" heading wider than the hint, so the LCP moved to an element that only renders after the data loads. Making the prerendered lead line the clear largest element fixed it, and it is better design anyway.
+  - Why `boot.js`: in the trace the first paint happened at DOMContentLoaded (97 ms), *after* the module script ran, so Lighthouse treated downloading and running the 88 kB bundle as a prerequisite for first paint. The prerendered page is already readable, so the bundle now starts one frame later (with a 500 ms fallback for background tabs). On a slow connection that also gives the HTML and fonts the bandwidth first.
+  - Hydration needed care: the theme label, saved count and recents now come from `useSyncExternalStore` stores whose server value matches the build-time HTML, so React hydrates without a mismatch and then shows the real values.
+- **Final scores (one full run per route, all four categories):**
+  | Route | Performance | Accessibility | Best Practices | SEO | FCP | LCP | TBT | CLS |
+  |---|---|---|---|---|---|---|---|---|
+  | `/` | 95 | 100 | 100 | 100 | 2.0 s | 2.6 s | 0 ms | 0.007 |
+  | `/w/dharm` | 96 | 100 | 100 | 100 | 2.0 s | 2.4 s | 0 ms | 0.007 |
+  | `/search?q=dharam` | 96 | 100 | 100 | 100 | 2.0 s | 2.4 s | 0 ms | 0.007 |
+  These are local runs with simulated throttling; the deployed Vercel numbers should be re-measured once the site is live.
+- **Sizes (gzip -9):** `index.html` with prerendered shell and inlined CSS 6.4 kB; app bundle 88.3 kB; `boot.js` 0.5 kB; `entries.json` 6.9 kB; GSAP 27.4 kB, lazy, after load. The fonts a page can use are 6 files, 343 kB in total, loaded only when text needs them.
+- **Also fixed:** Lighthouse flagged that the brand link's `aria-label` ("Garuda Shabd, home") did not contain its visible text (WCAG 2.5.3); the label was removed so the visible text is the name. The screenshot review also showed that meanings were *still* not numbered: the Step 5 fix lost a specificity contest to the list reset (`ol[class]` beats `.entry-meanings`).
+- **Verified:**
+  - Offline: after one online visit, with the network off, reload, search (`vishvas` → विश्वास), a deep link (`/w/shabd`) and all 5 font faces work, and the offline banner shows. Zero console errors with the CSP enforced.
+  - The 24-check interaction suite and the motion checks pass against the production build.
