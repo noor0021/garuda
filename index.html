@@ -7,7 +7,26 @@
     <script>(function(){var d=document.documentElement,p;try{p=localStorage.getItem('shabd.theme')}catch(e){}var t=p==='dark'||(p!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';d.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'#141312':'#FAF6EE')})()</script>
     <title>Garuda Shabd · Hindi–English dictionary</title>
     <meta name="description" content="Garuda Prakashan's Hindi–English dictionary. Search in Devanagari, in English, or in Hindi typed the way you type it on your phone: dharam, shanti, gyan." />
+    <link rel="canonical" href="%SITE_URL%/" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="preload" href="/data/entries.json" as="fetch" type="application/json" crossorigin="anonymous" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Garuda Shabd" />
+    <meta property="og:title" content="Garuda Shabd · Hindi–English dictionary" />
+    <meta property="og:description" content="Search in Devanagari, English, or Hindi typed the way you type it: dharam, dharm and dharma all find धर्म." />
+    <meta property="og:url" content="%SITE_URL%/" />
+    <meta property="og:image" content="%SITE_URL%/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Garuda Shabd: the word शब्द, and dharam, dharm, dharma all leading to धर्म" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:locale:alternate" content="hi_IN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Garuda Shabd · Hindi–English dictionary" />
+    <meta name="twitter:description" content="Any spelling works: dharam, dharm and dharma all find धर्म. Works offline." />
+    <meta name="twitter:image" content="%SITE_URL%/og-image.png" />
   </head>
   <body>
     <div id="root"></div>

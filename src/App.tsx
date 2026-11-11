@@ -94,6 +94,9 @@ export function App() {
 
   useEffect(() => {
     document.title = pageTitle(missingEntry ? { name: 'notFound', path: '' } : route, entry);
+    // Canonical per page, so a shared /w/dharm link is indexed as that word, not as the home page.
+    const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (canonical) canonical.href = new URL(window.location.pathname + window.location.search, canonical.href).href;
   }, [route, entry, missingEntry]);
 
   const onChange = (value: string) => {
@@ -146,7 +149,7 @@ export function App() {
 
   let list: React.ReactNode;
   if (load.status === 'error') list = <DataError message={load.message} onRetry={retry} />;
-  else if (!dictionary) list = <Loading />;
+  else if (!dictionary) list = listRoute?.name === 'home' || listRoute === null ? <Home dictionary={null} /> : <Loading />;
   else if (route.name === 'notFound' || missingEntry || !listRoute) list = <NotFound />;
   else if (listRoute.name === 'home') list = <Home dictionary={dictionary} />;
   else if (listRoute.name === 'search')

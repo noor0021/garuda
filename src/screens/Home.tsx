@@ -3,6 +3,7 @@ import { slugOf } from '../lib/dictionary.ts';
 import { onLinkClick } from '../lib/router.ts';
 import { routeHref } from '../lib/routes.ts';
 import { useRecent } from '../lib/user-data.ts';
+import { isDevanagari } from '../lib/indic.ts';
 import { VARNAMALA } from '../lib/varnamala.ts';
 
 const VOWELS = VARNAMALA.slice(0, 11);
@@ -39,22 +40,35 @@ function LetterGrid({ letters, dictionary, label }: { letters: readonly string[]
   );
 }
 
-export function Home({ dictionary }: { dictionary: Dictionary }) {
-  const recent = useRecent();
-  const today = wordOfTheDay(dictionary);
-
+/**
+ * The top of Home. It needs no dictionary data, so it is also prerendered into index.html at build
+ * time (scripts/prerender.tsx) and paints before any JavaScript has run.
+ */
+function HomeIntro() {
   return (
-    <div className="home">
+    <>
       <p className="home-hint">Any spelling works — Hindi or English</p>
       <ul className="chips" aria-label="Try a search">
         {TRY.map((q) => (
           <li key={q}>
-            <a className="chip chip-link" href={routeHref({ name: 'search', q })} onClick={onLinkClick} lang={/[ऀ-ॿ]/.test(q) ? 'hi' : undefined}>
+            <a className="chip chip-link" href={routeHref({ name: 'search', q })} onClick={onLinkClick} lang={isDevanagari(q) ? 'hi' : undefined}>
               {q}
             </a>
           </li>
         ))}
       </ul>
+    </>
+  );
+}
+
+/** Home. Without a dictionary yet (still loading, or prerendering) it shows only the intro. */
+export function Home({ dictionary }: { dictionary: Dictionary | null }) {
+  const recent = useRecent();
+  const today = dictionary ? wordOfTheDay(dictionary) : undefined;
+
+  return (
+    <div className="home">
+      <HomeIntro />
 
       {recent.items.length > 0 && (
         <section className="section" aria-labelledby="recent-title">
@@ -91,6 +105,9 @@ export function Home({ dictionary }: { dictionary: Dictionary }) {
         </section>
       )}
 
+      {!dictionary && <p className="loading section">Loading words…</p>}
+
+      {dictionary && (
       <section className="section" aria-labelledby="browse-title">
         <h2 id="browse-title" className="section-title">
           Browse by letter · <span lang="hi">वर्णमाला</span>
@@ -100,8 +117,9 @@ export function Home({ dictionary }: { dictionary: Dictionary }) {
         <h3 className="letter-group" lang="hi">व्यंजन <span lang="en">· consonants</span></h3>
         <LetterGrid letters={CONSONANTS} dictionary={dictionary} label="Consonants" />
       </section>
+      )}
 
-      <p className="home-count">{dictionary.ordered.length} words · dictionary version {dictionary.version}</p>
+      {dictionary && <p className="home-count">{dictionary.ordered.length} words · dictionary version {dictionary.version}</p>}
     </div>
   );
 }

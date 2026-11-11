@@ -5,7 +5,7 @@ import { ThemeToggle } from './ThemeToggle.tsx';
 export function Header() {
   return (
     <header className="topbar">
-      <a href="/" className="brand" onClick={onLinkClick} aria-label="Garuda Shabd, home">
+      <a href="/" className="brand" onClick={onLinkClick}>
         <GarudaMark />
         <span className="brand-text">
           <span className="brand-name">
