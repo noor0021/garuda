@@ -79,3 +79,18 @@ Planning, scope, the design spec and the step plan (`PLAN.md`) were done in a Cl
   - Screenshots at 375 px and 1280 px in light and dark: home, results, fuzzy results, no results, entry sheet, letter, 404, desktop results and saved.
   - A Playwright script against the dev server with zero console errors or warnings. Its 23 checks: results on the same keystroke, Enter opens the top result and blurs the input, focus moves into the sheet, Back / swipe / Esc close it, the save star, "Also spelled" chips, a trailing space surviving typing, Esc clearing, recents, saved words surviving a reload, a deep-linked entry closing to home, unknown slugs giving the 404, everything working with `localStorage` throwing, `/` focusing search, desktop Enter and Esc, the theme surviving a reload before paint, `theme-color` following the theme, and no control under 40 px.
   - The first run of that script reported two failures. Both were the script's fault (it checked before the dictionary had loaded, and in one case clicked the theme toggle behind an open modal, which the modal correctly blocked), not the app's.
+
+## Step 6: Motion
+
+- **Asked:** the GSAP animations in the C7 motion table, cleanup so nothing leaks on route changes, none at all under reduced motion, and proof that motion never delays results.
+- **Produced:** `src/lib/motion.ts` and its wiring: result rows fade + rise 8 px with a 30 ms stagger (first 10, and only rows that were not already showing, so typing `dhar` → `dharm` does not re-animate the same row), live-preview fade 0.15 s, sheet slide-up (`power3.out`, 0.35 s) with the scrim fading in, save-star pop with a marigold ring (0.3 s). The theme colour transition is CSS (Step 4). GSAP is a separate 27.4 kB (gzip) chunk, fetched only after the dictionary has loaded, so it never competes with first paint. Every tween runs inside a `gsap.context` that is reverted on unmount.
+- **What went wrong, found by measuring rather than eyeballing:**
+  1. *The first result row stayed invisible.* Sampling each row's opacity frame by frame in Chrome showed row 1 stuck at 0 while the others were at 1. React StrictMode runs effects twice in development; the first `gsap.from()` was reverted mid-flight, and the second recorded opacity 0 as its *end* value. This is exactly the "motion hides results" failure the plan warns about. Every tween is now `fromTo()` with explicit end values, which cannot end hidden.
+  2. *A one-frame flash on every search.* GSAP's default lazy rendering held back each tween's start state until its next tick, so rows painted fully visible, vanished, then faded in. Fixed with `lazy: false`.
+  3. *A drag could fight the slide-in.* Grabbing the sheet before it settled left GSAP and the swipe both writing the transform. Touching the grip now finishes the slide at once. (The interaction test found this because it measured the grip mid-slide.)
+  4. The CSS snap-back transition on the sheet would have smoothed every GSAP frame; it now applies only while the sheet snaps back after a short drag.
+- **Verified (headless Chrome, frame-by-frame sampling):**
+  - Rows exist in the DOM synchronously after the input event (9 rows for `sh`) whether motion is on or off.
+  - With motion, rows start at opacity 0 in the first frame and settle to 1 with inline styles cleared.
+  - Under `prefers-reduced-motion: reduce`, no row, sheet or star ever gets an inline animation style.
+  - The interaction suite, now 24 checks including "grabbing mid-slide finishes the slide", passes with zero console errors or warnings.
