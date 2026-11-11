@@ -48,6 +48,7 @@ How AI was used to build Garuda Shabd, what it got wrong, and how the work was c
 | 19 | The tour's Esc key on desktop | The browser run passed at 375 px and failed at 1280 px: Esc on the entry step left `dharam` in the search box, because the app's own "Esc closes the entry" handler also ran and its Back landed after the tour's reset | The app's handler stands down while the tour is open; the 1280 px run was repeated and passes |
 | 20 | The plan for this pass (four items in 25 minutes) | The work was split across two Claude Code sessions and one browser run hung for about three minutes with no output | Akshara breakdown and preview morph were cut at their cut-offs, as the brief required, and listed in the README's "What I'd build next" |
 | 21 | The logo, two variants | B (bar plus a straight stroke) reads as a Latin "T" at every size | A (bar plus a stroke that sweeps into a wing-tip) was chosen: at 16 px it still reads as a letterform hanging from a headline |
+| 22 | The new mark inside the opening intro | Noor reported not seeing the intro; replaying a true first visit showed it plays, but the vermilion wing sat above the bar instead of hanging from it. The earlier tour runs had skipped the intro, so it was never looked at after the logo change | GSAP was changing the transform origin on paths already scaled to 0 and offsetting them to compensate. The origin is now set once in SVG units before scaling; re-captured and checked by eye |
 
 ## How data, facts and code were checked
 

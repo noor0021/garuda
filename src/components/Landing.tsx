@@ -99,7 +99,11 @@ export function Landing() {
           context = g.context(() => {
             const q = <T extends Element>(selector: string) => [...element.querySelectorAll<T>(selector)];
             const tl = g.timeline({ defaults: { ease: 'power3.out', lazy: false } });
-            tl.fromTo(q('.landing-feather'), { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, stagger: 0.12, transformOrigin: '0% 100%', ease: 'back.out(1.7)' }, 0)
+            // The origin is fixed in SVG units (the middle of the bar's underside) while the paths are
+            // still at full size. Setting it on paths already scaled to 0 made GSAP offset them to
+            // compensate, which left the wing above the bar instead of hanging from it.
+            g.set(q('.landing-feather'), { svgOrigin: '16 10' });
+            tl.fromTo(q('.landing-feather'), { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, stagger: 0.12, ease: 'back.out(1.7)' }, 0)
               .fromTo(q('.landing-rule'), { scaleX: 0 }, { scaleX: 1, duration: 0.7 }, 0.25)
               .fromTo(q('.landing-name, .landing-tagline'), { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.1 }, 0.35)
               .fromTo(q('.landing-cta, .landing-skip'), { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, 0.7)
