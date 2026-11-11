@@ -68,6 +68,9 @@ export default defineConfig({
         globIgnores: ['**/og-image.png'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
+        // Take control of the page on the very first visit, so airplane mode works straight after
+        // the first load (no reload needed). Updates still wait for the user's Refresh.
+        clientsClaim: true,
       },
     }),
   ],
