@@ -11,7 +11,7 @@
 - Never state a number (bundle size, speed, Lighthouse score) in docs unless you measured it.
 - If a requirement in PLAN.md is unclear or impossible, stop and ask me rather than guessing.
 
-## Project state (updated 11 Nov 2026, after Step 10)
+## Project state (updated 11 Nov 2026, 11:12 PM, after Step 12)
 
 A handoff note so a new session can pick up without re-reading everything. The detailed record of
 each step is in `docs/ai-log-steps.md`; the summary is in `AI_LOG.md`.
@@ -26,7 +26,15 @@ each step is in `docs/ai-log-steps.md`; the summary is in `AI_LOG.md`.
   text size, animations, intro on/off, listen speed, clear recents/saved, about + replay intro);
   a GSAP opening intro shown as an overlay once per session on `/` only (never on deep links,
   skippable, CSS fallback when motion is off); a layout cleanup pass.
-- Measured (local): 434 tests pass; search average 34.8 µs; app JS 92.3 kB gz, GSAP 27.1 kB gz
+- Step 11 (letterpress pass, 10:50 PM): vermilion-on-white / chalk-on-slate palette with the layout
+  hung from a 3px shirorekha rule; a guided spotlight tour (`src/components/Tour.tsx`,
+  `src/lib/tour.ts`) ported from Noor's MediCord project, first visit to `/` only, `?` replays it.
+  Cut at their cut-offs and listed in the README's "What I'd build next": the akshara breakdown and
+  the Roman→Devanagari preview morph.
+- Step 12: new shirorekha mark (`public/logo.svg`, `GarudaMark.tsx`) and a regenerated icon set,
+  `favicon.ico` and `og-image.png`.
+- Measured (local): 443 tests pass (the other numbers here were measured at Step 10, before the
+  redesign); search average 34.8 µs; app JS 92.3 kB gz, GSAP 27.1 kB gz
   lazy-loaded; Lighthouse mobile Performance 95–96 (one 83 outlier run), Accessibility, Best
   Practices and SEO 100.
 
