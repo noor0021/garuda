@@ -1,0 +1,10 @@
+node_modules
+dist
+dev-dist
+drive
+.vercel
+.DS_Store
+*.local
+*.log
+coverage
+.lighthouseci
