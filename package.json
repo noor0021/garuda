@@ -13,6 +13,7 @@
     "test": "vitest run",
     "validate": "tsx scripts/validate-data.ts",
     "iast": "tsx scripts/iast.ts",
+    "bench": "tsx scripts/bench-search.ts",
     "check": "npm run typecheck && npm run lint && npm run test && npm run validate"
   },
   "dependencies": {

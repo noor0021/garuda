@@ -3,6 +3,8 @@
 //        npm run validate -- <file>  (checks another file)
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createSearchIndex, search } from '../src/lib/search.ts';
+import type { Entry } from '../src/lib/types.ts';
 import { VARNAMALA } from '../src/lib/varnamala.ts';
 import { validateDataset } from './validate-core.ts';
 
@@ -16,7 +18,14 @@ try {
   process.exit(1);
 }
 
-const { errors, summary } = validateDataset(raw);
+// Check 3b uses the real search engine: the spelling an editor lists must find its own word first.
+let cachedIndex: { entries: Entry[]; index: ReturnType<typeof createSearchIndex> } | undefined;
+const topResult = (query: string, entries: Entry[]): string | undefined => {
+  if (cachedIndex?.entries !== entries) cachedIndex = { entries, index: createSearchIndex(entries) };
+  return search(cachedIndex.index, query)[0]?.entry.headword;
+};
+
+const { errors, summary } = validateDataset(raw, topResult);
 
 console.log(`Dataset: ${file}`);
 console.log(`Entries: ${summary.total}`);

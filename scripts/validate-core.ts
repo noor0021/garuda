@@ -3,6 +3,7 @@
  * The CLI (validate-data.ts) and the mutation tests (tests/validator.test.ts) both call this.
  */
 import { toIast } from '../src/lib/iast.ts';
+import { deaccent } from '../src/lib/sound-key.ts';
 import { normaliseDevanagari } from '../src/lib/indic.ts';
 import { entryShapeErrors, POS_VALUES, type Entry } from '../src/lib/types.ts';
 import { firstLetter, VARNAMALA } from '../src/lib/varnamala.ts';
@@ -64,6 +65,9 @@ export function validateDataset(raw: unknown, topResult?: TopResult): Validation
   const seenIds = new Map<number, string>();
   const seenHeadwords = new Map<string, number>();
   const seenSpellings = new Map<string, Entry>();
+  // The search engine treats the de-accented IAST as an exact spelling too (tier 1).
+  const iastOwners = new Map<string, Entry>();
+  for (const entry of entries) iastOwners.set(deaccent(entry.transliteration).replace(/[^a-z]/g, ''), entry);
 
   for (const entry of entries) {
     const where = `id ${entry.id} ${entry.headword}`;
@@ -111,6 +115,10 @@ export function validateDataset(raw: unknown, topResult?: TopResult): Validation
         errors.push(`${where}: spelling "${spelling}" collides with id ${owner.id} ${owner.headword}`);
       }
       seenSpellings.set(spelling, entry);
+      const iastOwner = iastOwners.get(spelling);
+      if (iastOwner && iastOwner.id !== entry.id) {
+        errors.push(`${where}: spelling "${spelling}" is the IAST of id ${iastOwner.id} ${iastOwner.headword}`);
+      }
     }
 
     // Check 5: the example uses the headword exactly.
@@ -141,7 +149,7 @@ export function validateDataset(raw: unknown, topResult?: TopResult): Validation
   summary.total = entries.length;
 
   // Check 3b: typing any listed spelling must bring up its own entry first.
-  // TODO(Step 3): the CLI passes the real search engine in as `topResult`.
+  // The CLI passes the real search engine in as `topResult` (see validate-data.ts).
   if (topResult) {
     for (const entry of entries) {
       for (const spelling of entry.romanised) {
