@@ -1,6 +1,6 @@
-# AI log · Garuda Shabd
+# AI log, step by step · Garuda Shabd
 
-How AI was used to build this project, what it got wrong, and how the output was checked. Updated after every step, not written from memory at the end.
+The detailed record behind [AI_LOG.md](../AI_LOG.md), written after each step as the work happened (not from memory at the end). Times are IST on 11 Nov 2026.
 
 ## Planning
 
@@ -60,7 +60,7 @@ Planning, scope, the design spec and the step plan (`PLAN.md`) were done in a Cl
   - English matches whole meanings too ("to eat", "right now"), and filler words (to, a, the, of…) are not searchable on their own, otherwise `to` would match every verb at tier 3. English word prefixes (≥ 3 letters) count for tier 4, so `wat` shows पानी (water) while the user is still typing.
 - **What I got wrong first:** the first mutation test for check 3b planted a near-spelling on another word and expected search to rank it elsewhere. It could never fail: every listed spelling is an exact (tier 1) match for its own entry, so it always wins. Working out why showed the real way 3b can break: a spelling that equals *another* entry's de-accented IAST makes two tier-1 hits, which are then sorted by वर्णमाला. Check 4 now rejects that case directly (tested with "kapara" on किताब vs कपड़ा = kapar̤a), and 3b is tested with a planted wrong search result.
 - **Known limits, left as they are:** `ladka` shows लड़की as "starts with" because the dataset has no लड़का; plural or inflected forms (`kitaabein`) find nothing. Both are dataset coverage, not engine bugs.
-- **Verified:** `npm run check` green, 399 tests: all C5 cases, one chip per tier (Latin and Devanagari), 13 sound-key pairs, वर्णमाला sorting, and every one of the 324 listed spellings returning its own entry first.
+- **Verified:** `npm run check` green, 399 tests: all C5 cases, one chip per tier (Latin and Devanagari), 13 sound-key pairs, वर्णमाला sorting, and every one of the 322 listed spellings returning its own entry first. *(Corrected in Step 9: this first said 324, which was not counted.)*
 
 ## Steps 4–5: Design system, app shell, router and screens
 
@@ -122,13 +122,13 @@ Planning, scope, the design spec and the step plan (`PLAN.md`) were done in a Cl
   | `/w/dharm` | 96 | 100 | 100 | 100 | 2.0 s | 2.4 s | 0 ms | 0.007 |
   | `/search?q=dharam` | 96 | 100 | 100 | 100 | 2.0 s | 2.4 s | 0 ms | 0.007 |
   These are local runs with simulated throttling; the deployed Vercel numbers should be re-measured once the site is live.
-- **Sizes (gzip -9):** `index.html` with prerendered shell and inlined CSS 6.4 kB; app bundle 88.3 kB; `boot.js` 0.5 kB; `entries.json` 6.9 kB; GSAP 27.4 kB, lazy, after load. The fonts a page can use are 6 files, 343 kB in total, loaded only when text needs them.
+- **Sizes (gzip -9):** `index.html` with prerendered shell and inlined CSS 6.4 kB; app bundle 88.3 kB; `boot.js` 0.5 kB; `entries.json` 6.9 kB; GSAP 27.4 kB, lazy, after load. The 6 font files the app uses total 382 kB (measured after Step 8); each loads only when text on the page needs it. *(Corrected in Step 9: this line first said 343 kB, a figure that had not been measured.)*
 - **Also fixed:** Lighthouse flagged that the brand link's `aria-label` ("Garuda Shabd, home") did not contain its visible text (WCAG 2.5.3); the label was removed so the visible text is the name. The screenshot review also showed that meanings were *still* not numbered: the Step 5 fix lost a specificity contest to the list reset (`ol[class]` beats `.entry-meanings`).
 - **Verified:**
   - Offline: after one online visit, with the network off, reload, search (`vishvas` → विश्वास), a deep link (`/w/shabd`) and all 5 font faces work, and the offline banner shows. Zero console errors with the CSP enforced.
   - The 24-check interaction suite and the motion checks pass against the production build.
 
-## Step 8: Wiktionary fallback (go: started 8:21 PM, before the 10:35 cut-off, all earlier steps done)
+## Step 8: Wiktionary fallback (go: started about 8:17 PM, before the 10:35 cut-off, all earlier steps done)
 
 - **Checked first, as the plan requires:** `curl` of `/api/rest_v1/page/definition/पानी` returned 200 with `access-control-allow-origin: *`. The body is keyed by language code (`hi`, `ne`, `other`…), each entry is `{partOfSpeech, definitions: [{definition: HTML}]}`. A missing word (`खखखख`) returns 404 `{status, type}`. पानी is already in the dataset, so the live check uses किसान (farmer), which isn't.
 - **Produced:** `src/lib/wiktionary.ts` (pure apart from injected `fetch` and storage) and a dashed, separately labelled section on the no-results screen: "Not in Garuda’s dictionary yet · from Wiktionary (CC BY-SA)", up to 3 senses, and a link to the source page. It only runs for Devanagari queries with zero local results; 4 s `AbortController` timeout; only the `hi` section is read; HTML is stripped to plain text and rendered as text (no `dangerouslySetInnerHTML`); results and 404s are cached per word in `sessionStorage`; offline or on any error, nothing extra is shown.
@@ -141,3 +141,12 @@ Planning, scope, the design spec and the step plan (`PLAN.md`) were done in a Cl
 - **Verified:**
   - `tests/wiktionary.test.ts`, 10 tests with a mocked `fetch`: success (3 senses max, plain text, source URL), timeout at exactly 4 s (fake timers), 404 (cached), no `hi` section, 503 (not cached), network failure, cache hit, no network for Latin or offline, abort, and HTML/entity stripping (including an `<img onerror>` payload).
   - Live in Chrome against the production build with the CSP enforced: किसान shows "noun farmer, cultivator" with the CC BY-SA label and source link, the "Did you mean" rows stay separate below it, and the console stays clean.
+
+## Step 9: Docs and Drive package
+
+- **Asked:** README (with screenshots, how search works with a real example, measured numbers, trade-offs, what next), CONTRIBUTING for editors, a finished one-to-two-page AI log with TODOs for Noor, and a git-ignored `drive/` folder.
+- **Produced:** `README.md`; `CONTRIBUTING.md` (written for Garuda's editors: `npm run iast`, spelling rules, what validator errors look like, why ids and first spellings never change); `AI_LOG.md` as the summary, with this file as the detailed record; six screenshots in `docs/screenshots/`, captured from the production build with reduced motion so they are crisp; `drive/README.md`, `drive/AI_LOG.md` and `drive/entries.json`.
+- **Re-measured for the README rather than copied from earlier steps:** search 34.8 µs average (index build 3.9 ms), 431 tests, app JS 89.5 kB gzip, GSAP 27.1 kB, `index.html` 6.4 kB, `entries.json` 6.9 kB, precache 27 files / 798 KiB.
+- **Corrections found by re-measuring:** this log had said "324 listed spellings" (Step 3) and "fonts 343 kB" (Step 7) without counting either. The real numbers are 322 and 382 kB; both places are corrected and marked. The README also said "90-line router"; it is 94 lines.
+- **One retried capture:** the first screenshot run timed out waiting for the Wiktionary section. A fresh run got HTTP 200 and the section rendered, so the first was most likely a transient error, which the app correctly turns into "show nothing extra". The retry logged the response status.
+- **Not done by Claude Code (Noor's steps):** connecting Vercel (the live URL in the README is a marked TODO until then), testing on a phone, the Drive folder and its sharing setting, the spot-check notes, and the form.
