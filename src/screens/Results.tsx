@@ -1,7 +1,9 @@
+import { useLayoutEffect, useRef } from 'react';
 import { EntryRow } from '../components/EntryRow.tsx';
 import type { Dictionary } from '../lib/dictionary.ts';
 import { onLinkClick } from '../lib/router.ts';
 import { routeHref } from '../lib/routes.ts';
+import { animateFadeIn, animateRows } from '../lib/motion.ts';
 import { livePreview, suggestions, type SearchResult } from '../lib/search.ts';
 import type { Entry } from '../lib/types.ts';
 
@@ -19,14 +21,34 @@ export function Results({ query, results, dictionary, currentId, onOpen }: Props
   const fuzzy = results.filter((r) => r.tier === 5);
   const q = query.trim();
 
+  // Motion runs after React has already put the rows on screen, so it never delays them.
+  // Only rows that were not showing before animate: typing "dhar" → "dharm" does not flicker.
+  const container = useRef<HTMLDivElement>(null);
+  // `before` is the list that was showing before this one. Re-running the effect for the same
+  // list (React StrictMode does this in development) compares against the same `before`.
+  const seen = useRef<{ key: string; ids: Set<number>; before: Set<number> }>({ key: '', ids: new Set(), before: new Set() });
+  const idsKey = results.map((r) => r.entry.id).join(',');
+  useLayoutEffect(() => {
+    const ids = idsKey ? idsKey.split(',').map(Number) : [];
+    if (seen.current.key !== idsKey) seen.current = { key: idsKey, ids: new Set(ids), before: seen.current.ids };
+    const { before } = seen.current;
+    const rows = [...(container.current?.querySelectorAll<HTMLElement>('[data-row]') ?? [])];
+    const fresh = rows.filter((_, i) => !before.has(ids[i] ?? -1));
+    return animateRows(container.current, fresh);
+  }, [idsKey]);
+
+  const previewRef = useRef<HTMLSpanElement>(null);
+  const previewKey = preview?.headword ?? '';
+  useLayoutEffect(() => (previewKey ? animateFadeIn(previewRef.current) : undefined), [previewKey]);
+
   return (
-    <div className="results">
+    <div className="results" ref={container}>
       {results.length > 0 && (
         <p className="preview" data-preview>
           {preview && (
-            <>
+            <span ref={previewRef}>
               <span>{preview.query}</span> <span aria-hidden="true">→</span> <span lang="hi">{preview.headword}</span>
-            </>
+            </span>
           )}
         </p>
       )}

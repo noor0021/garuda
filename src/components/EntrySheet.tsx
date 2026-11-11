@@ -5,7 +5,7 @@ type Props = {
   onClose: () => void;
   children: ReactNode;
   /** Lets the motion layer animate the sheet and scrim in. */
-  onOpen?: (sheet: HTMLElement, scrim: HTMLElement) => void;
+  onOpen?: (sheet: HTMLElement, scrim: HTMLElement) => () => void;
 };
 
 const CLOSE_DISTANCE = 96; // px dragged down before letting go closes the sheet
@@ -21,6 +21,7 @@ export function EntrySheet({ labelledBy, onClose, children, onOpen }: Props) {
   const scrim = useRef<HTMLDivElement>(null);
   const drag = useRef<{ startY: number; startTime: number; dy: number } | null>(null);
   const openHandler = useRef(onOpen);
+  const stopMotion = useRef<(() => void) | undefined>(undefined);
 
   useEffect(() => {
     const element = dialog.current;
@@ -29,8 +30,9 @@ export function EntrySheet({ labelledBy, onClose, children, onOpen }: Props) {
     const { overflow } = document.body.style;
     document.body.style.overflow = 'hidden';
     if (!element.open) element.showModal();
-    if (sheet.current && scrim.current) openHandler.current?.(sheet.current, scrim.current);
+    stopMotion.current = sheet.current && scrim.current ? openHandler.current?.(sheet.current, scrim.current) : undefined;
     return () => {
+      stopMotion.current?.();
       document.body.style.overflow = overflow;
       if (element.open) element.close();
       returnFocus?.focus({ preventScroll: true });
@@ -39,6 +41,13 @@ export function EntrySheet({ labelledBy, onClose, children, onOpen }: Props) {
 
   const setOffset = (dy: number) => {
     if (sheet.current) sheet.current.style.transform = dy > 0 ? `translateY(${dy}px)` : '';
+  };
+  const snapBack = () => {
+    const element = sheet.current;
+    if (!element) return;
+    element.classList.add('sheet-snapping');
+    setOffset(0);
+    window.setTimeout(() => element.classList.remove('sheet-snapping'), 220);
   };
 
   return (
@@ -57,9 +66,11 @@ export function EntrySheet({ labelledBy, onClose, children, onOpen }: Props) {
         <div
           className="sheet-grip"
           onPointerDown={(event) => {
+            // Grabbed while still sliding in: finish the slide at once so the drag owns the transform.
+            stopMotion.current?.();
+            stopMotion.current = undefined;
             drag.current = { startY: event.clientY, startTime: event.timeStamp, dy: 0 };
             event.currentTarget.setPointerCapture(event.pointerId);
-            if (sheet.current) sheet.current.style.transition = 'none';
           }}
           onPointerMove={(event) => {
             if (!drag.current) return;
@@ -69,15 +80,14 @@ export function EntrySheet({ labelledBy, onClose, children, onOpen }: Props) {
           onPointerUp={(event) => {
             const state = drag.current;
             drag.current = null;
-            if (sheet.current) sheet.current.style.transition = '';
             if (!state) return;
             const velocity = state.dy / Math.max(1, event.timeStamp - state.startTime); // px per ms
             if (state.dy > CLOSE_DISTANCE || (state.dy > 24 && velocity > 0.6)) onClose();
-            else setOffset(0);
+            else snapBack();
           }}
           onPointerCancel={() => {
             drag.current = null;
-            setOffset(0);
+            snapBack();
           }}
         >
           <span className="sheet-handle" aria-hidden="true" />

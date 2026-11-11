@@ -7,6 +7,7 @@ import { SearchBar } from './components/SearchBar.tsx';
 import { Segmented } from './components/Segmented.tsx';
 import { loadDictionary, slugOf, type Dictionary } from './lib/dictionary.ts';
 import { useIsDesktop } from './lib/hooks.ts';
+import { animateSaved, animateSheetIn, preloadMotion } from './lib/motion.ts';
 import { goBackOr, navigate, useLocationState } from './lib/router.ts';
 import { routeHref, SITE_NAME, type Route } from './lib/routes.ts';
 import { search } from './lib/search.ts';
@@ -85,6 +86,11 @@ export function App() {
   // On desktop the right pane previews the top result while typing; Enter or a click opens it.
   const paneEntry = entry ?? (isDesktop && listRoute?.name === 'search' ? results[0]?.entry : undefined);
   const [focusEntry, setFocusEntry] = useState(false);
+
+  // GSAP is fetched only after the words are on screen, so it never competes with first paint.
+  useEffect(() => {
+    if (dictionary) preloadMotion();
+  }, [dictionary]);
 
   useEffect(() => {
     document.title = pageTitle(missingEntry ? { name: 'notFound', path: '' } : route, entry);
@@ -174,6 +180,7 @@ export function App() {
                   headingId="pane-headword"
                   focusHeading={focusEntry && entry !== undefined}
                   onClose={entry ? closeEntry : undefined}
+                  onSaved={animateSaved}
                 />
               ) : (
                 <Intro count={dictionary?.ordered.length ?? 0} />
@@ -183,8 +190,8 @@ export function App() {
         </main>
       </div>
       {sheetOpen && entry && dictionary && (
-        <EntrySheet labelledBy="sheet-headword" onClose={closeEntry}>
-          <EntryView key={entry.id} entry={entry} dictionary={dictionary} headingId="sheet-headword" onClose={closeEntry} focusHeading />
+        <EntrySheet labelledBy="sheet-headword" onClose={closeEntry} onOpen={animateSheetIn}>
+          <EntryView key={entry.id} entry={entry} dictionary={dictionary} headingId="sheet-headword" onClose={closeEntry} focusHeading onSaved={animateSaved} />
         </EntrySheet>
       )}
     </>

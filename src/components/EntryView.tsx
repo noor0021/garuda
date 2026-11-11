@@ -66,6 +66,7 @@ export function EntryView({ entry, dictionary, headingId, onClose, focusHeading,
             }}
           >
             <StarIcon filled={isSaved} />
+            <span className="star-ring" aria-hidden="true" />
           </button>
           {onClose && (
             <button type="button" className="icon-button" onClick={onClose} aria-label="Close">
