@@ -43,12 +43,16 @@ export type SearchIndex = {
   records: IndexRecord[];
   latinFuse: Fuse<{ key: string; spelling: string; record: number }>;
   devanagariFuse: Fuse<{ key: string; record: number }>;
+  /** Looser fuzzy matchers, only for "did you mean" on the no-results screen. */
+  latinLoose: Fuse<{ key: string; spelling: string; record: number }>;
+  devanagariLoose: Fuse<{ key: string; record: number }>;
 };
 
 export const MAX_RESULTS = 20;
 const FUZZY_THRESHOLD = 0.3;
 const FUZZY_BAND = 0.1;
 const FUZZY_MIN_LENGTH = 4;
+const SUGGEST_THRESHOLD = 0.5;
 
 /** Words in meanings that would match almost every verb or phrase if searchable on their own. */
 const ENGLISH_STOPWORDS = new Set(['a', 'an', 'the', 'to', 'of', 'for', 'with', 'oneself', 'around', 'up', 'at', 'in', 'on']);
@@ -93,14 +97,15 @@ export function createSearchIndex(entries: readonly Entry[]): SearchIndex {
   const latinDocs = records.flatMap((record, i) =>
     [...record.keys].map(([key, spelling]) => ({ key, spelling, record: i })),
   );
-  const fuseOptions = { keys: ['key'], includeScore: true, threshold: FUZZY_THRESHOLD };
+  const devDocs = records.map((record, i) => ({ key: record.devKey, record: i }));
+  const strict = { keys: ['key'], includeScore: true, threshold: FUZZY_THRESHOLD };
+  const loose = { ...strict, threshold: SUGGEST_THRESHOLD };
   return {
     records,
-    latinFuse: new Fuse(latinDocs, fuseOptions),
-    devanagariFuse: new Fuse(
-      records.map((record, i) => ({ key: record.devKey, record: i })),
-      fuseOptions,
-    ),
+    latinFuse: new Fuse(latinDocs, strict),
+    devanagariFuse: new Fuse(devDocs, strict),
+    latinLoose: new Fuse(latinDocs, loose),
+    devanagariLoose: new Fuse(devDocs, loose),
   };
 }
 
@@ -221,6 +226,31 @@ export function search(index: SearchIndex, query: string): SearchResult[] {
   if (isDevanagari(query)) searchDevanagari(index, query, hits);
   else searchLatin(index, query, hits);
   return hits.sorted();
+}
+
+/**
+ * Up to three looser guesses for the no-results screen ("Did you mean…"). Separate from search()
+ * so that ordinary results never carry low-confidence noise.
+ */
+export function suggestions(index: SearchIndex, query: string, limit = 3): Entry[] {
+  const devanagari = isDevanagari(query);
+  const key = devanagari ? devanagariSoundKey(query) : soundKey(cleanLatin(query));
+  if ([...key].length < 3) return [];
+  const hits = devanagari ? index.devanagariLoose.search(key) : index.latinLoose.search(key);
+  const seen = new Set<number>();
+  const out: Entry[] = [];
+  const first = [...key][0];
+  const top = hits[0]?.score ?? 0;
+  for (const { item, score = 1 } of hits) {
+    if (score - top > FUZZY_BAND) break;
+    const record = index.records[item.record];
+    // People rarely get the first sound of a word wrong; this keeps gibberish from matching.
+    if (!record || seen.has(record.entry.id) || [...item.key][0] !== first) continue;
+    seen.add(record.entry.id);
+    out.push(record.entry);
+    if (out.length === limit) break;
+  }
+  return out;
 }
 
 /**

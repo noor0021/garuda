@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSearchIndex, livePreview, search, type SearchResult } from '../src/lib/search.ts';
+import { createSearchIndex, livePreview, search, suggestions, type SearchResult } from '../src/lib/search.ts';
 import { dataset, MIXED_QUERIES } from './fixtures.ts';
 
 const index = createSearchIndex(dataset.entries);
@@ -139,5 +139,17 @@ describe('livePreview', () => {
 describe('every listed spelling finds its own entry first (validator check 3b)', () => {
   it.each(dataset.entries.flatMap((e) => e.romanised.map((s) => [s, e.headword] as const)))('%s → %s', (spelling, headword) => {
     expect(top(spelling)?.entry.headword).toBe(headword);
+  });
+});
+
+describe('suggestions (no-results screen only)', () => {
+  it('offers close words when search finds nothing', () => {
+    expect(run('kitaabein')).toEqual([]);
+    expect(suggestions(index, 'kitaabein').map((e) => e.headword)).toContain('किताब');
+  });
+
+  it('offers nothing for gibberish or very short input', () => {
+    expect(suggestions(index, 'xyzq')).toEqual([]);
+    expect(suggestions(index, 'qq')).toEqual([]);
   });
 });
