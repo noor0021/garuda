@@ -1,26 +1,28 @@
 /*
- * Design tokens (PLAN.md C7): ink on paper, like a well-printed dictionary.
+ * Design tokens (PLAN.md C7, letterpress pass): vermilion (सिंदूर) on white, chalk on slate in dark.
+ * No shadows and no rounded pills: the structure comes from the shirorekha rule (see app.css).
  * Light is the default; the inline script in index.html sets data-theme="dark" before first paint
  * when the saved choice (or the system, if nothing is saved) is dark.
  * Contrast of every text/background pair is checked by `npm run contrast`.
  */
 :root {
   color-scheme: light;
-  --bg: #FAF6EE;
+  --bg: #FFFFFF;
   --surface: #FFFFFF;
-  --ink: #1C1A17;
-  --ink-2: #6B655C;
-  --line: #E7E0D3;
-  --line-strong: #8C8476;
-  --accent: #0F6E6E;
+  --ink: #111111;
+  --ink-2: #555555;
+  --line: #E4E4E4;
+  --line-strong: #767676;
+  --accent: #B3122E;
   --on-accent: #FFFFFF;
-  --accent-soft: #E3F0EE;
-  --mark: #C27A12;
-  --mark-ink: #8A5208;
-  --mark-soft: #FBEFD9;
+  --accent-soft: #FBEDEF;
+  --mark: #B3122E;
+  --mark-ink: #B3122E;
+  --mark-soft: #FFFFFF;
   --danger: #B3412E;
-  --scrim: rgb(28 26 23 / 0.42);
-  --shadow-sheet: 0 -8px 32px rgb(28 26 23 / 0.14);
+  --scrim: rgb(17 17 17 / 0.5);
+  --shadow-sheet: none;
+  --shiro: 3px;
 
   --font-ui: 'Inter Variable', 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-hi: 'Noto Sans Devanagari', 'Inter Variable', system-ui, sans-serif;
@@ -36,8 +38,8 @@
   --space-10: 40px;
   --space-12: 48px;
 
-  --radius: 12px;
-  --radius-pill: 999px;
+  --radius: 0px;
+  --radius-pill: 0px;
   --tap: 44px;
   --pane-left: 380px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -45,19 +47,19 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #141312;
-  --surface: #1E1C1A;
-  --ink: #ECE6DA;
-  --ink-2: #A39C90;
-  --line: #2E2B27;
-  --line-strong: #6E675D;
-  --accent: #5FBFB4;
-  --on-accent: #0B1F1D;
-  --accent-soft: #1A2E2C;
-  --mark: #E8A93A;
-  --mark-ink: #E8A93A;
-  --mark-soft: #2E2416;
+  --bg: #0F0F11;
+  --surface: #18181B;
+  --ink: #F2F2F2;
+  --ink-2: #A1A1AA;
+  --line: #2A2A2E;
+  --line-strong: #71717A;
+  --accent: #FF6B6B;
+  --on-accent: #0F0F11;
+  --accent-soft: #2A1618;
+  --mark: #FF6B6B;
+  --mark-ink: #FF6B6B;
+  --mark-soft: #18181B;
   --danger: #E07A66;
   --scrim: rgb(0 0 0 / 0.6);
-  --shadow-sheet: 0 -8px 32px rgb(0 0 0 / 0.5);
+  --shadow-sheet: none;
 }

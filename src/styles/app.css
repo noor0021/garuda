@@ -1433,3 +1433,278 @@ legend.setting-label + * {
     visibility: hidden;
   }
 }
+
+/* ══ Letterpress pass ═════════════════════════════════════════════════════════
+ * The SHIROREKHA (शिरोरेखा) is the headline that Devanagari letters hang from. Here it is the one
+ * structural rule of the layout: a solid 3px --ink line across the top of the search bar, the
+ * result list, the entry and every popover, with the content hanging beneath it. No shadows, no
+ * rounded pills, no tinted cards: only ink, white and vermilion.
+ */
+
+.topbar {
+  border-bottom: 1px solid var(--line);
+}
+
+.brand-name {
+  letter-spacing: 0.01em;
+}
+
+/* Search bar: hangs from the rule, open at the sides like a line of type. */
+.searchbar-input {
+  border: 0;
+  border-top: var(--shiro) solid var(--ink);
+  border-bottom: 1px solid var(--line-strong);
+  background: transparent;
+  padding-left: 34px;
+}
+
+.searchbar-icon {
+  left: 2px;
+}
+
+.searchbar-input:focus-visible {
+  outline: none;
+  border-top-color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Tabs: small caps, the current one underlined in vermilion. */
+.segmented {
+  padding: 0;
+  gap: var(--space-5);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  grid-template-columns: auto auto;
+  justify-content: start;
+}
+
+.segmented a {
+  min-height: var(--tap);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  font-size: 17px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.segmented a[aria-current='page'] {
+  background: transparent;
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+.segmented-count {
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Rows: the list hangs from one shirorekha; headwords sit against it. */
+.rows {
+  border-top: var(--shiro) solid var(--ink);
+}
+
+.row-link {
+  align-items: start;
+  padding: var(--space-2) 0 var(--space-3);
+}
+
+.row-link:hover {
+  background: transparent;
+}
+
+.row-link:hover .row-headword {
+  color: var(--accent);
+}
+
+.row-link[aria-current='true'] {
+  background: transparent;
+  box-shadow: inset 3px 0 0 var(--accent);
+  padding-left: var(--space-3);
+}
+
+.row-headword {
+  line-height: 1.15;
+}
+
+.row-text {
+  padding-top: 2px;
+}
+
+/* Chips: small-caps text with a thin vermilion underline, never a filled pill. */
+.chip,
+.chip-quiet,
+.chip-plain {
+  min-height: 0;
+  padding: 0 0 1px;
+  border: 0;
+  border-bottom: 1px solid var(--accent);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.05em;
+  font-size: 14px;
+  align-self: start;
+  margin-top: 6px;
+}
+
+.chip-quiet {
+  border-bottom-color: var(--line-strong);
+  color: var(--ink-2);
+}
+
+.chips {
+  gap: 0 var(--space-5);
+}
+
+.chip-link {
+  min-height: var(--tap);
+  padding: 0;
+  margin-top: 0;
+  border-bottom: 0;
+  font-size: 17px;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+}
+
+.chip-link:hover {
+  outline: none;
+  color: var(--accent);
+}
+
+/* Entry: the headword hangs from the rule like a letter from its headline. */
+.entry {
+  border-top: var(--shiro) solid var(--ink);
+  padding-top: 0;
+}
+
+.entry-headword {
+  line-height: 1.12;
+  padding-top: 2px;
+}
+
+.pill {
+  margin-top: var(--space-2);
+  padding: 0;
+  border: 0;
+  color: var(--ink-2);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  font-size: 16px;
+}
+
+.entry-label {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+  text-transform: none;
+  font-variant-caps: all-small-caps;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+}
+
+.entry-meanings li::marker {
+  color: var(--accent);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.entry-example {
+  border-left: 0;
+  border-top: 1px solid var(--ink);
+  background: transparent;
+}
+
+.entry-example mark {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
+}
+
+/* Cards and popovers: square, flat, hung from the rule. */
+.today,
+.wikt,
+.toast,
+.sheet,
+.choice {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.today,
+.wikt {
+  border: 0;
+  border-top: var(--shiro) solid var(--ink);
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  padding-inline: 0;
+}
+
+.today:hover .today-headword {
+  color: var(--accent);
+}
+
+.sheet,
+.toast {
+  border: 1px solid var(--line-strong);
+  border-top: var(--shiro) solid var(--ink);
+}
+
+.sheet-handle {
+  border-radius: 0;
+}
+
+.letter {
+  border-radius: 0;
+  background: transparent;
+}
+
+.button,
+.small-button,
+.landing-skip,
+.landing-demo-item {
+  border-radius: 0;
+}
+
+.icon-button {
+  border-radius: 0;
+}
+
+.icon-button:hover {
+  background: transparent;
+  color: var(--accent);
+}
+
+.offline-banner {
+  border-bottom: 1px solid var(--accent);
+}
+
+.landing::before {
+  display: none;
+}
+
+.landing-rule {
+  height: var(--shiro);
+  border-radius: 0;
+  background: var(--ink);
+}
+
+@media (min-width: 900px) {
+  .sheet-layer-panel .sheet {
+    border-radius: 0;
+  }
+}
+
+.segmented a,
+.row-link,
+.letter,
+.choice-option span,
+.text-button {
+  border-radius: 0;
+}

@@ -33,7 +33,7 @@ const PAIRS: [string, string, number, string][] = [
   ['accent', 'bg', 4.5, 'links, IAST, active tab'],
   ['accent', 'surface', 4.5, 'IAST and links on the sheet'],
   ['accent', 'accent-soft', 4.5, 'selected segment, preview line'],
-  ['on-accent', 'accent', 4.5, 'text on teal buttons'],
+  ['on-accent', 'accent', 4.5, 'text on vermilion buttons'],
   ['mark-ink', 'mark-soft', 4.5, 'chip text'],
   ['mark-ink', 'surface', 4.5, 'highlighted headword in the example'],
   ['danger', 'bg', 4.5, 'error text'],

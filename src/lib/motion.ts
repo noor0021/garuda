@@ -60,7 +60,7 @@ export function animateSheetIn(sheet: Element, scrim: Element): () => void {
   });
 }
 
-/** Save star: a scale pop and a marigold ring that grows and fades. */
+/** Save star: a scale pop and a vermilion ring that grows and fades. */
 export function animateSaved(star: HTMLElement): void {
   const ring = star.querySelector('.star-ring');
   const cleanup = animate(star, (g) => {

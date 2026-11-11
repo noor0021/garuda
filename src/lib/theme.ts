@@ -6,7 +6,7 @@ import { useSyncExternalStore } from 'react';
 import { STORAGE_KEYS } from './storage.ts';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
-export const THEME_COLORS = { light: '#FAF6EE', dark: '#141312' } as const;
+export const THEME_COLORS = { light: '#FFFFFF', dark: '#0F0F11' } as const;
 
 const isPreference = (v: unknown): v is ThemePreference => v === 'system' || v === 'light' || v === 'dark';
 const systemDark = () => window.matchMedia('(prefers-color-scheme: dark)').matches;
