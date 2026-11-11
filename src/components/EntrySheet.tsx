@@ -2,6 +2,8 @@ import { useEffect, useRef, type ReactNode } from 'react';
 
 type Props = {
   labelledBy: string;
+  /** "panel" centres the dialog on wide screens (Settings); the default is a bottom sheet. */
+  variant?: 'sheet' | 'panel';
   onClose: () => void;
   children: ReactNode;
   /** Lets the motion layer animate the sheet and scrim in. */
@@ -15,7 +17,7 @@ const CLOSE_DISTANCE = 96; // px dragged down before letting go closes the sheet
  * the browser makes the rest of the page inert, keeps focus inside and maps Esc to "cancel".
  * Closes on Esc, the scrim, the close button, Back (the URL changes) and a swipe down.
  */
-export function EntrySheet({ labelledBy, onClose, children, onOpen }: Props) {
+export function EntrySheet({ labelledBy, onClose, children, onOpen, variant = 'sheet' }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   const sheet = useRef<HTMLDivElement>(null);
   const scrim = useRef<HTMLDivElement>(null);
@@ -53,7 +55,7 @@ export function EntrySheet({ labelledBy, onClose, children, onOpen }: Props) {
   return (
     <dialog
       ref={dialog}
-      className="sheet-layer"
+      className={`sheet-layer sheet-layer-${variant}`}
       aria-labelledby={labelledBy}
       onCancel={(event) => {
         // Esc: let the router close it, so the URL and the dialog stay in step.

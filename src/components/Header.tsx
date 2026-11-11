@@ -1,8 +1,8 @@
 import { onLinkClick } from '../lib/router.ts';
 import { GarudaMark } from './GarudaMark.tsx';
-import { ThemeToggle } from './ThemeToggle.tsx';
+import { GearIcon } from './Icons.tsx';
 
-export function Header() {
+export function Header({ onOpenSettings }: { onOpenSettings: () => void }) {
   return (
     <header className="topbar">
       <a href="/" className="brand" onClick={onLinkClick}>
@@ -14,7 +14,10 @@ export function Header() {
           <span className="brand-by">Garuda Prakashan</span>
         </span>
       </a>
-      <ThemeToggle />
+      <button type="button" className="icon-button settings-button" onClick={onOpenSettings} aria-haspopup="dialog">
+        <GearIcon />
+        <span className="settings-button-label">Settings</span>
+      </button>
     </header>
   );
 }
