@@ -1,2 +1,44 @@
-// Placeholder. Step 2 of PLAN.md replaces this with the real dataset validator (PLAN.md C3).
-console.log('validate: no dataset yet (placeholder passes)');
+// Dataset validator CLI (PLAN.md C3). Exits 1 on any error, so `npm run check` and CI fail.
+// Usage: npm run validate            (checks public/data/entries.json)
+//        npm run validate -- <file>  (checks another file)
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { VARNAMALA } from '../src/lib/varnamala.ts';
+import { validateDataset } from './validate-core.ts';
+
+const file = resolve(process.argv[2] ?? 'public/data/entries.json');
+
+let raw: unknown;
+try {
+  raw = JSON.parse(readFileSync(file, 'utf8'));
+} catch (error) {
+  console.error(`✖ Could not read ${file}: ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+}
+
+const { errors, summary } = validateDataset(raw);
+
+console.log(`Dataset: ${file}`);
+console.log(`Entries: ${summary.total}`);
+console.log(
+  'By part of speech: ' +
+    Object.entries(summary.byPos)
+      .sort((a, b) => b[1] - a[1])
+      .map(([pos, n]) => `${pos} ${n}`)
+      .join(' · '),
+);
+console.log(
+  'By first letter:   ' +
+    VARNAMALA.filter((letter) => summary.byLetter[letter])
+      .map((letter) => `${letter} ${summary.byLetter[letter]}`)
+      .join(' · '),
+);
+const empty = VARNAMALA.filter((letter) => !summary.byLetter[letter]);
+if (empty.length > 0) console.log(`No words yet for:  ${empty.join(' ')}`);
+
+if (errors.length > 0) {
+  console.error(`\n✖ ${errors.length} problem${errors.length === 1 ? '' : 's'}:`);
+  for (const error of errors) console.error(`  - ${error}`);
+  process.exit(1);
+}
+console.log('\n✓ Dataset is valid');
