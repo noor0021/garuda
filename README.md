@@ -8,7 +8,7 @@ A Hindi–English dictionary for Garuda Prakashan's readers, built as an install
 |---|---|---|
 | ![Results for "vishvaas": विश्वास, chip "sounds like: vishwas"](docs/screenshots/phone-light-results.png) | ![Entry sheet for धर्म in dark mode](docs/screenshots/phone-dark-entry.png) | ![Two-pane desktop layout with शांति open](docs/screenshots/desktop-light-entry.png) |
 
-More: [home](docs/screenshots/phone-light-home.png) · [desktop dark](docs/screenshots/desktop-dark-home.png) · [Wiktionary fallback](docs/screenshots/phone-light-wiktionary.png)
+More: [intro](docs/screenshots/phone-light-landing.png) · [settings](docs/screenshots/desktop-light-settings.png) · [home](docs/screenshots/phone-light-home.png) · [desktop dark](docs/screenshots/desktop-dark-home.png) · [Wiktionary fallback](docs/screenshots/phone-light-wiktionary.png)
 
 ## Why this exists
 
@@ -22,7 +22,9 @@ Garuda's readers meet words such as धर्म, श्रद्धा and स�
 - **Browse** by वर्णमाला letter (क्ष, त्र and ज्ञ are letters of their own; letters with no words are greyed out), **Saved** words, recent searches, and a word of the day.
 - **Works offline** after the first visit, installs to the home screen, and shows "New version available · Refresh" when Garuda publishes new words.
 - **Not in the dictionary yet?** For a Devanagari word with no match, a clearly labelled, separate section shows up to three Hindi senses from Wiktionary (CC BY-SA) with a link to the source.
-- Light and dark themes (follows the system, with an override that is remembered), phone bottom sheet with swipe-to-close, two panes on desktop, full keyboard use (`/` to search, `Enter` opens the top result, `Esc` clears or closes), and motion that switches off under reduced-motion settings.
+- **An opening intro** (GSAP): the wing mark builds itself, शब्द appears, and three real searches play (`dharam → धर्म`, `vishvaas → विश्वास`, `peace → शांति`) before it hands over to the home page after 3 seconds. It plays once per visit, only on the home page (never on a shared word link), can be skipped, and can be switched off or replayed in Settings.
+- **Settings** in one place (the gear in the header): theme (System, Light, Dark), text size (Default, Large: headwords, meanings and examples 15% larger, for older readers), animations (System, On, Off), the intro, Listen speed, clearing recent searches or saved words, and an About section with the dictionary version and offline status. Theme, text size and motion are applied before first paint, so nothing jumps on load.
+- Phone bottom sheet with swipe-to-close, two panes on desktop, full keyboard use (`/` to search, `Enter` opens the top result, `Esc` clears or closes), and motion that switches off under the system's reduced-motion setting or the in-app one.
 
 ## Run it
 
@@ -90,12 +92,12 @@ Fuzzy hits are dropped entirely when any tier 1–3 match exists, so a correct a
 
 ## Quality gates
 
-- **431 tests** (Vitest), including every search case from the plan, one chip per tier, all 322 listed spellings finding their own word first, and mutation tests that plant 14 kinds of data mistake and check the validator names each one.
+- **434 tests** (Vitest), including every search case from the plan, one chip per tier, all 322 listed spellings finding their own word first, and mutation tests that plant 14 kinds of data mistake and check the validator names each one.
 - **Dataset validator** on every check and CI run: shape, unique ids/headwords/spellings, IAST matches the transliteration helper, spellings are lowercase a–z and not common English words, a spelling may not equal another word's IAST, examples contain the headword, part of speech (with gender for nouns) from a fixed list, and each spelling's search returns its own entry first.
 - **Contrast check** of every colour pair in both themes against WCAG AA.
 - **Deploy-config test:** the CSP must contain the exact hash of the inline theme script, and the headers and rewrites from the plan.
 - **CI** (GitHub Actions, Node 22): `npm ci`, `npm run check`, `npm run build` on every push.
-- **Browser checks** (Playwright driving Chrome, run locally): 24 interaction checks (keyboard, Back, swipe, storage blocked, theme without flash…), offline after a first visit, and frame-by-frame motion sampling. Zero console errors or warnings.
+- **Browser checks** (Playwright driving Chrome, run locally): 24 interaction checks (keyboard, Back, swipe, storage blocked, theme without flash…), 16 intro and settings checks (plays once per visit, never on deep links, Skip, reduced motion, every setting applied at once and surviving a reload, replay), offline after a first visit, and frame-by-frame motion sampling. Zero console errors or warnings.
 
 ## Measured numbers
 
@@ -105,20 +107,20 @@ All measured on the development Mac.
 |---|---|
 | Search, average over 20,000 searches (1,000 × 20 mixed queries, Node 25.2.1) | **34.8 µs** (0.035 ms); slowest are fuzzy queries, ~140 µs |
 | Index build at load | 3.9 ms |
-| `index.html` (prerendered shell + inlined CSS) | 6.4 kB gzip |
-| App JavaScript | 89.5 kB gzip (GSAP 27.1 kB more, lazy, after load) |
+| `index.html` (prerendered shell and intro + inlined CSS) | 8.2 kB gzip |
+| App JavaScript | 92.3 kB gzip (GSAP 27.1 kB more, lazy) |
 | Dictionary `entries.json` | 6.9 kB gzip |
-| Offline precache | 27 files, 798 KiB (includes the 6 font files, 382 kB) |
+| Offline precache | 27 files, 815 KiB (includes the 6 font files, 382 kB) |
 
 Lighthouse 12.6.1, mobile (simulated slow 4G, 4× CPU slowdown), production build served locally with the `vercel.json` headers:
 
 | Page | Performance | Accessibility | Best Practices | SEO |
 |---|---|---|---|---|
-| `/` | 95 | 100 | 100 | 100 |
+| `/` (with the intro playing) | 95–96 | 100 | 100 | 100 |
 | `/w/dharm` | 96 | 100 | 100 | 100 |
 | `/search?q=dharam` | 96 | 100 | 100 | 100 |
 
-The first build scored 79 on Performance; [AI_LOG.md](AI_LOG.md) records each change that got it to 95–96. These are local runs; the deployed site should be re-measured once it is live.
+The first build scored 79 on Performance; [AI_LOG.md](AI_LOG.md) records each change that got it to 95–96. With the intro, five of six home runs scored 95–96; one scored 83 because that run's first paint took 947 ms on the machine (about 125 ms in the others). The intro's शब्द is prerendered and never animated, so it stays the fast largest paint. These are local runs; the deployed site should be re-measured once it is live.
 
 ## Trade-offs
 
@@ -127,7 +129,8 @@ The first build scored 79 on Performance; [AI_LOG.md](AI_LOG.md) records each ch
 - **Local-first data.** The whole dictionary is one file in the browser: instant search, offline by default, no backend to run or secure. That is right at hundreds or a few thousand words; at Garuda's full dictionary size it would move to a split index or a lookup API (below).
 - **PWA, not native.** One codebase installs on Android, iOS and desktop, updates without a store review, and is a link anyone can share. The price is no store listing, which an Android TWA would fix.
 - **No accounts.** Saved words and recents stay on the device (and the app works with storage blocked). Nothing about a reader leaves their phone; the only network call besides the app itself is the labelled Wiktionary lookup.
-- **Prerendered shell + hydration.** The header, search box and home intro are rendered into `index.html` at build time, and the bundle loads one frame after first paint. This took mobile Performance from 79 to 95–96.
+- **Prerendered shell + hydration.** The header, search box, the top of Home and the opening intro are rendered into `index.html` at build time, and the bundle loads one frame after first paint. This took mobile Performance from 79 to 95–96.
+- **An intro that costs nothing to skip.** A splash screen on every visit would slow down a reference tool people open many times a day, so it plays once per visit, never on shared links, never blocks a reader who wants to search (Skip, Esc, "Start searching"), and has a CSS fallback that removes it even if JavaScript fails.
 
 ## What I'd build next
 

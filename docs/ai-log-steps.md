@@ -150,3 +150,25 @@ Planning, scope, the design spec and the step plan (`PLAN.md`) were done in a Cl
 - **Corrections found by re-measuring:** this log had said "324 listed spellings" (Step 3) and "fonts 343 kB" (Step 7) without counting either. The real numbers are 322 and 382 kB; both places are corrected and marked. The README also said "90-line router"; it is 94 lines.
 - **One retried capture:** the first screenshot run timed out waiting for the Wiktionary section. A fresh run got HTTP 200 and the section rendered, so the first was most likely a transient error, which the app correctly turns into "show nothing extra". The retry logged the response status.
 - **Not done by Claude Code (Noor's steps):** connecting Vercel (the live URL in the README is a marked TODO until then), testing on a phone, the Drive folder and its sharing setting, the spot-check notes, and the form.
+
+## Step 10 (added by Noor after Step 9): Settings, an opening intro, and a cleanup pass (started 8:35 PM)
+
+- **Asked:** "add a settings button that includes all the settings, make a landing page, add GSAP animation to it, then redirect to the home page, and format everything so the UI looks organised and clean."
+- **Interpretation, decided rather than asked (it was 8:35 PM, deadline 11:30):**
+  - *Settings* became one panel behind a gear in the header, replacing the theme pill: theme, text size (for Garuda's older readers), animations (System/On/Off), the intro, Listen speed, clearing recents or saved words, and About (dictionary version, offline status, replay intro). A native `<dialog>` again: a bottom sheet on phones, centred on desktop.
+  - *Landing page* became an intro overlay on the home page rather than a separate route that redirects. Same effect for the reader, but the URL stays `/` and Back never lands on a splash. It plays **once per visit** and **never on deep links** (`/w/dharm`): a splash on every open would slow down a tool readers use many times a day. It can be skipped (Skip, Esc, "Start searching") and switched off or replayed in Settings.
+  - *Cleanup:* result rows on a three-column grid (columns line up whatever the headword length), the header simplified to brand + Settings, and spacing in the new panel on the same 4 px scale.
+- **How the intro avoids hurting performance and accessibility:**
+  - The inline pre-paint script decides whether it shows (`<html data-intro="show">`), so there is no flash of the home page first. The same script now also applies text size and motion before paint; the CSP hash was updated, and the deploy-config test checks it.
+  - The big शब्द is prerendered and never animated, so it is the page's largest paint at first paint. GSAP animates everything around it: the feathers, the rule, the tagline, the demo searches, the progress bar and the exit.
+  - The intro waits in a CSS-hidden "show" state until GSAP has loaded, then switches to "play" and starts the timeline in the same task, so nothing flashes. If JavaScript never runs, CSS reveals it after 1.5 s and removes it after 6 s.
+  - The markup is always rendered (also into the prerendered HTML) and shown only by CSS, so hydration cannot mismatch.
+  - While it plays, the app behind it is `inert`. Afterwards, desktop focus moves to the search box; phones get no focus, which would pop up the keyboard.
+- **Found while testing, and fixed:**
+  - The first browser run of the intro failed: it never started. The console showed the browser blocking the new inline script under the *old* CSP hash. The local test server had read `vercel.json` at startup, before the hash changed. Restarting it fixed the run. It also showed exactly what a stale hash would do in production, which the deploy-config test prevents.
+  - Fieldset legends left a large gap above each setting's hint (a legend sits in the fieldset's border); the legends now float.
+  - On phones, auto-focusing "Start searching" drew a focus ring over the intro; it is now focused only on keyboard-sized screens.
+- **Verified:**
+  - 16 new browser checks against the production build: decided before paint, the hero visible at once, the app inert while playing, a hand-over to home, no repeat in the same session, none on deep links, Skip ends it in about 0.6 s, reduced motion gives a still card with no animation styles, every setting applying at once and surviving a reload (theme, size, motion before paint), the intro switch working in a new session, and replay. Zero console errors.
+  - The earlier 24 interaction checks, offline, first-visit and motion suites still pass. 434 unit tests pass.
+  - Lighthouse, home with the intro: 95, 95, 96, 96, 95 and one 83. That run's first paint took 947 ms on the machine against about 125 ms in the others, so it is reported, not hidden. Entry and search routes score 96. Accessibility, Best Practices and SEO are 100 everywhere.

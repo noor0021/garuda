@@ -19,6 +19,7 @@ How AI was used to build Garuda Shabd, what it got wrong, and how the work was c
 2. **"Read the plan, start executing step by step, commit and push as you finish each step."** Later: **"You may make multiple commits with comments"**, so each step became several small, separately verified commits.
 3. Noor pasted the judging criteria (quality of output; thinking and method, with AI output *checked and improved*; specificity to Garuda). That shaped the work: measure rather than assume, log what went wrong, and make the product Garuda's (its readers' typing habits, its vocabulary, an editor workflow).
 4. Steps 1–9 of `PLAN.md`: scaffold, dataset + validator, search engine, design system, screens, motion, production hardening, Wiktionary, docs.
+5. **Added after Step 9:** "a settings button with all the settings, a landing page with GSAP animation that redirects to home, and make the UI organised and clean." Built as a Settings panel, a once-per-visit intro, and a cleanup pass ([Step 10](docs/ai-log-steps.md#step-10-added-by-noor-after-step-9-settings-an-opening-intro-and-a-cleanup-pass-started-835-pm)).
 
 ## What was rejected or corrected, and why
 
@@ -38,13 +39,15 @@ How AI was used to build Garuda Shabd, what it got wrong, and how the work was c
 | 12 | Offline support | Airplane mode straight after a first visit failed until a reload | `clientsClaim`; re-tested |
 | 13 | Two numbers in this log (fonts "343 kB", "324 spellings") | Not measured, against the project rule | Measured (382 kB, 322) and corrected, with the correction noted where they appear |
 | 14 | Plan: prefix search needs ≥ 2 characters, but `श` must return prefix results | Conflict inside the plan | One Devanagari letter is a full akshara, so the minimum applies to Latin only; both tests pass |
+| 15 | "A landing page that redirects to home", read literally | A splash route on every open slows a tool used many times a day, and Back would land on it | An intro overlay: once per visit, never on shared links, skippable, can be switched off; its शब्द is prerendered so Lighthouse stays at 95–96 |
+| 16 | The intro's first browser test | It never started: the browser blocked the changed inline script under a stale CSP hash (the local server had read the old `vercel.json`) | Restarted with the current config; the deploy-config test keeps the real hash in sync |
 
 ## How data, facts and code were checked
 
 - **Dataset:** the validator (IAST, uniqueness, spelling rules, examples, part of speech, and "each spelling finds its own word first") runs in every check and CI run. 14 mutation tests plant one mistake each and confirm the validator names it. Claude re-read every new entry for gender and verb agreement before generating the file.
 - **Noor's manual spot-check** of 15 random entries (ids 31, 32, 33, 50, 51, 57, 63, 77, 81, 93, 118, 121, 123, 125, 129): see the TODO below.
-- **Code:** 431 Vitest tests (every search case from the plan, one chip per tier, routes, Wiktionary with a mocked `fetch`, the CSP hash), strict TypeScript, oxlint, and CI on every push.
-- **In a real browser:** 24 Playwright interaction checks, offline and first-visit tests, motion sampled frame by frame, all with zero console errors; screenshots at 375/390 px and 1280 px in both themes, reviewed by eye.
+- **Code:** 434 Vitest tests (every search case from the plan, one chip per tier, routes, Wiktionary with a mocked `fetch`, the CSP hash), strict TypeScript, oxlint, and CI on every push.
+- **In a real browser:** 24 Playwright interaction checks, 16 intro and settings checks, offline and first-visit tests, motion sampled frame by frame, all with zero console errors; screenshots at 375/390 px and 1280 px in both themes, reviewed by eye.
 - **Facts:** the Wiktionary API's shape and CORS were checked with `curl` before building on them; every number in the README was measured (search time, sizes, Lighthouse), and the Lighthouse runs are labelled as local.
 - **Phone testing on a real device:** see the TODO below.
 
