@@ -685,6 +685,44 @@ a.letter:hover {
   font-weight: 600;
 }
 
+/* Wiktionary fallback: visibly a different source, never styled like a Garuda entry. */
+.wikt {
+  align-self: stretch;
+  margin-top: var(--space-2);
+  padding: var(--space-4);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+}
+
+.wikt-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.wikt-word {
+  margin-top: var(--space-2);
+  font-size: 28px;
+}
+
+ol.wikt-senses {
+  margin-top: var(--space-2);
+  padding-left: var(--space-5);
+  list-style: decimal;
+}
+
+.wikt-pos {
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+.wikt-source {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  margin-top: var(--space-1);
+}
+
 /* ── Entry ────────────────────────────────────────── */
 
 .entry {

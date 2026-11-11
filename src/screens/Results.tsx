@@ -1,11 +1,70 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { EntryRow } from '../components/EntryRow.tsx';
 import type { Dictionary } from '../lib/dictionary.ts';
 import { onLinkClick } from '../lib/router.ts';
 import { routeHref } from '../lib/routes.ts';
 import { animateFadeIn, animateRows } from '../lib/motion.ts';
 import { livePreview, suggestions, type SearchResult } from '../lib/search.ts';
+import { useOnline } from '../lib/hooks.ts';
+import { isDevanagari } from '../lib/indic.ts';
 import type { Entry } from '../lib/types.ts';
+import { lookupWiktionary, type WiktionaryResult } from '../lib/wiktionary.ts';
+
+/** Network lookups wait until typing pauses; local search does not (it is instant). */
+const WIKTIONARY_DELAY_MS = 400;
+
+/**
+ * Wiktionary lookup for a Devanagari word with no local results (PLAN.md C9). Returns null while
+ * loading, offline, on any error, or when Wiktionary has no Hindi entry.
+ */
+function useWiktionary(query: string): { loading: boolean; result: WiktionaryResult | null } {
+  const online = useOnline();
+  const enabled = online && isDevanagari(query);
+  const [state, setState] = useState<{ query: string; loading: boolean; result: WiktionaryResult | null }>({ query: '', loading: false, result: null });
+
+  useEffect(() => {
+    if (!enabled) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      setState({ query, loading: true, result: null });
+      void lookupWiktionary(query, { signal: controller.signal, online }).then((result) => {
+        if (!controller.signal.aborted) setState({ query, loading: false, result });
+      });
+    }, WIKTIONARY_DELAY_MS);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query, enabled, online]);
+
+  return enabled && state.query === query ? state : { loading: false, result: null };
+}
+
+function WiktionaryFallback({ query }: { query: string }) {
+  const { loading, result } = useWiktionary(query);
+  if (loading) return <p className="empty-note wikt-loading">Looking it up on Wiktionary…</p>;
+  if (!result) return null;
+  return (
+    <section className="wikt" aria-labelledby="wikt-title">
+      <h3 id="wikt-title" className="wikt-label">
+        Not in Garuda’s dictionary yet · from Wiktionary (
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA</a>)
+      </h3>
+      <p className="wikt-word" lang="hi">{result.word}</p>
+      <ol className="wikt-senses">
+        {result.senses.map((sense) => (
+          <li key={sense.definition}>
+            {sense.partOfSpeech && <span className="wikt-pos">{sense.partOfSpeech}</span>} {sense.definition}
+          </li>
+        ))}
+      </ol>
+      <a className="wikt-source" href={result.url} target="_blank" rel="noopener noreferrer">
+        Read the full entry on Wiktionary <span aria-hidden="true">↗</span>
+        <span className="visually-hidden"> (opens in a new tab)</span>
+      </a>
+    </section>
+  );
+}
 
 type Props = {
   query: string;
@@ -89,6 +148,8 @@ function NoResults({ query, dictionary, onOpen }: { query: string; dictionary: D
     <div className="empty">
       <p className="empty-hi" lang="hi">हमें ‘{query}’ नहीं मिला</p>
       <h2 className="empty-title">We couldn’t find ‘{query}’</h2>
+
+      <WiktionaryFallback query={query} />
 
       {close.length > 0 && (
         <>
