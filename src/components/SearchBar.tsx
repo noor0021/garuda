@@ -15,6 +15,7 @@ export const SearchBar = forwardRef<HTMLInputElement, Props>(function SearchBar(
     <form
       role="search"
       className="searchbar"
+      data-tour="search"
       onSubmit={(event) => {
         event.preventDefault();
         onSubmit();

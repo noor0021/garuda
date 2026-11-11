@@ -30,7 +30,7 @@ export function EntryRow({ entry, chip, current, onOpen, action }: Props) {
           <span className="row-iast">{entry.transliteration}</span>
           <span className="row-meaning">{entry.meanings[0]}</span>
         </span>
-        {chip && <span className={`chip${chip === 'exact' ? ' chip-quiet' : ''}`}>{chip}</span>}
+        {chip && <span className={`chip${chip === 'exact' ? ' chip-quiet' : ''}`} data-tour="chip">{chip}</span>}
       </a>
       {action}
     </li>

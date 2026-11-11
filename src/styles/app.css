@@ -1708,3 +1708,206 @@ legend.setting-label + * {
 .text-button {
   border-radius: 0;
 }
+
+/* ── Guided tour (ported from MediCord's TutorialOverlay, restyled to the letterpress) ── */
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tour-button-open {
+  width: var(--tap);
+  height: var(--tap);
+  border: 1px solid var(--line-strong);
+  font: 650 18px/1 var(--font-ui);
+  color: var(--ink);
+}
+
+dialog.tour {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  overflow: hidden;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tour-stage {
+  position: absolute;
+  inset: 0;
+}
+
+dialog.tour.tour-placed {
+  opacity: 1;
+}
+
+dialog.tour::backdrop {
+  background: transparent;
+}
+
+.tour-scrim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  fill: rgb(0 0 0 / 0.62);
+}
+
+.tour-ring {
+  position: absolute;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+  animation: tour-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes tour-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent); }
+  50% { box-shadow: 0 0 0 4px var(--accent); }
+}
+
+.tour-card {
+  position: fixed;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-top: var(--shiro) solid var(--ink);
+  background: var(--surface);
+  font-size: 15px;
+  line-height: 1.5;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.tour-card-in {
+  opacity: 1;
+  transform: none;
+}
+
+.tour-card svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.tour-title {
+  margin-bottom: var(--space-1);
+  font: 650 19px/1.3 var(--font-ui);
+}
+
+.tour-tail {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+}
+
+.tour-tail-below {
+  top: -22px;
+  border-bottom-color: var(--ink);
+}
+
+.tour-tail-above {
+  bottom: -20px;
+  border-top-color: var(--line-strong);
+}
+
+.tour-hud {
+  position: fixed;
+  left: 50%;
+  bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4) var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-top: var(--shiro) solid var(--ink);
+  background: var(--surface);
+  cursor: default;
+}
+
+.tour-hint {
+  color: var(--ink-2);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.08em;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.tour-pips {
+  display: flex;
+  gap: 4px;
+}
+
+.tour-pips li {
+  width: 6px;
+  height: 3px;
+  background: var(--line-strong);
+  opacity: 0.45;
+  transition: width 0.3s ease;
+}
+
+.tour-pips li.is-done {
+  opacity: 1;
+}
+
+.tour-pips li.is-current {
+  width: 18px;
+  background: var(--accent);
+  opacity: 1;
+}
+
+.tour-buttons {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.tour-button {
+  min-width: 88px;
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+  font: 600 15px/1 var(--font-ui);
+  cursor: pointer;
+}
+
+.tour-button-next {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+dialog.tour.tour-still,
+.tour-still .tour-ring,
+.tour-still .tour-card,
+.tour-still .tour-pips li {
+  animation: none;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='on']) dialog.tour,
+  :root:not([data-motion='on']) .tour-ring,
+  :root:not([data-motion='on']) .tour-card,
+  :root:not([data-motion='on']) .tour-pips li {
+    animation: none;
+    transition: none;
+  }
+}

@@ -9,7 +9,7 @@ export function Segmented({ active, searchHref, savedCount }: Props) {
       <a href={searchHref} onClick={onLinkClick} aria-current={active === 'search' ? 'page' : undefined}>
         Search
       </a>
-      <a href="/saved" onClick={onLinkClick} aria-current={active === 'saved' ? 'page' : undefined}>
+      <a href="/saved" data-tour="saved-tab" onClick={onLinkClick} aria-current={active === 'saved' ? 'page' : undefined}>
         Saved{savedCount > 0 && <span className="segmented-count">{savedCount}</span>}
       </a>
     </nav>

@@ -6,6 +6,7 @@ import { Landing, REPLAY_INTRO_EVENT } from './components/Landing.tsx';
 import { OfflineBanner } from './components/OfflineBanner.tsx';
 import { SearchBar } from './components/SearchBar.tsx';
 import { SettingsPanel } from './components/SettingsPanel.tsx';
+import { Tour, type TourActions } from './components/Tour.tsx';
 import { Segmented } from './components/Segmented.tsx';
 import { loadDictionary, slugOf, type Dictionary } from './lib/dictionary.ts';
 import { useIsDesktop } from './lib/hooks.ts';
@@ -14,6 +15,7 @@ import { currentThemePreference, watchSystemTheme } from './lib/theme.ts';
 import { goBackOr, navigate, useLocationState } from './lib/router.ts';
 import { routeHref, SITE_NAME, type Route } from './lib/routes.ts';
 import { search } from './lib/search.ts';
+import { markTourSeen, shouldAutoStartTour, TOUR_QUERY, tourSeen } from './lib/tour.ts';
 import type { Entry } from './lib/types.ts';
 import { useRecent, useSaved } from './lib/user-data.ts';
 import { Home } from './screens/Home.tsx';
@@ -90,6 +92,7 @@ export function App() {
   const paneEntry = entry ?? (isDesktop && listRoute?.name === 'search' ? results[0]?.entry : undefined);
   const [focusEntry, setFocusEntry] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
 
   // "System" theme follows the OS live (also while Settings is closed).
   useEffect(() => watchSystemTheme(currentThemePreference), []);
@@ -138,6 +141,53 @@ export function App() {
     navigate(`/w/${slugOf(top.entry)}`);
   };
 
+  // The guided tour starts by itself on a first visit to the home page, once the words have
+  // loaded and the opening intro (if it is playing) has finished. Never on /w/:slug.
+  useEffect(() => {
+    if (!dictionary || !shouldAutoStartTour(window.location.pathname, window.location.search, tourSeen())) return;
+    const html = document.documentElement;
+    const introPlaying = () => html.dataset.intro === 'show' || html.dataset.intro === 'play';
+    let timer = 0;
+    const start = () => {
+      if (introPlaying()) return;
+      observer.disconnect();
+      timer = window.setTimeout(() => {
+        if (shouldAutoStartTour(window.location.pathname, window.location.search, tourSeen())) setTourOpen(true);
+      }, 600);
+    };
+    const observer = new MutationObserver(start);
+    observer.observe(html, { attributes: true, attributeFilter: ['data-intro'] });
+    start();
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timer);
+    };
+  }, [dictionary]);
+
+  const tourActions: TourActions = {
+    search: (value) => onChange(value),
+    openEntry: () => {
+      const top = dictionary ? search(dictionary.index, TOUR_QUERY)[0] : undefined;
+      if (top) navigate(`/w/${slugOf(top.entry)}`);
+    },
+    restore: () => {
+      setTyped('');
+      navigate('/');
+      // After the tour dialog has closed and returned focus.
+      window.setTimeout(() => input.current?.focus(), 60);
+    },
+  };
+  const closeTour = () => {
+    markTourSeen();
+    setTourOpen(false);
+  };
+  const startTour = () => {
+    setSettingsOpen(false);
+    setTyped('');
+    navigate('/');
+    setTourOpen(true);
+  };
+
   const backTo = listRoute ? routeHref(listRoute) : '/';
   const closeEntry = useCallback(() => goBackOr(backTo), [backTo]);
 
@@ -148,13 +198,13 @@ export function App() {
         event.preventDefault();
         input.current?.focus();
         input.current?.select();
-      } else if (event.key === 'Escape' && isDesktop && route.name === 'entry' && !isTyping(event.target)) {
+      } else if (event.key === 'Escape' && !tourOpen && isDesktop && route.name === 'entry' && !isTyping(event.target)) {
         closeEntry();
       }
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [isDesktop, route.name, closeEntry]);
+  }, [isDesktop, route.name, closeEntry, tourOpen]);
 
   const sheetOpen = !isDesktop && entry !== undefined && dictionary !== null;
   const segment = listRoute?.name === 'saved' ? 'saved' : 'search';
@@ -174,7 +224,7 @@ export function App() {
     <>
       <div className="app">
         <OfflineBanner />
-        <Header onOpenSettings={() => setSettingsOpen(true)} />
+        <Header onOpenSettings={() => setSettingsOpen(true)} onStartTour={startTour} />
         <main className="layout" id="main">
           <section className="pane-list" aria-label="Search and word lists">
             <h1 className="visually-hidden">
@@ -216,6 +266,7 @@ export function App() {
         </EntrySheet>
       )}
       <Landing />
+      <Tour open={tourOpen} scene={route.name === 'entry' ? 'entry' : route.name === 'search' ? 'search' : 'home'} query={query} actions={tourActions} onClose={closeTour} />
     </>
   );
 }

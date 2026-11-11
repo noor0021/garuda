@@ -103,7 +103,7 @@ export function Results({ query, results, dictionary, currentId, onOpen }: Props
   return (
     <div className="results" ref={container}>
       {results.length > 0 && (
-        <p className="preview" data-preview>
+        <p className="preview" data-preview data-tour="preview">
           {preview && (
             <span ref={previewRef}>
               <span>{preview.query}</span> <span aria-hidden="true">→</span> <span lang="hi">{preview.headword}</span>

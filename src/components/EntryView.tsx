@@ -48,7 +48,7 @@ export function EntryView({ entry, dictionary, headingId, onClose, focusHeading,
         <h2 id={headingId} ref={heading} tabIndex={-1} className="entry-headword" lang="hi">
           {entry.headword}
         </h2>
-        <div className="entry-actions">
+        <div className="entry-actions" data-tour="entry-actions">
           {voice && (
             <button type="button" className="icon-button" onClick={() => speakHindi(entry.headword, voice)} aria-label={`Listen to ${entry.headword}`}>
               <SpeakerIcon />

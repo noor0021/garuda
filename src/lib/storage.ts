@@ -31,4 +31,6 @@ export const STORAGE_KEYS = {
   settings: 'shabd.settings',
   /** sessionStorage: set once the intro has played in this session. */
   introSeen: 'shabd.intro',
+  /** Set once the guided tour has been finished or skipped. */
+  tourSeen: 'shabd.tourSeen',
 } as const;
